@@ -2,6 +2,8 @@ package CPSC559;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.io.IOException;
 
@@ -12,6 +14,8 @@ public class LoadBalancer implements Runnable{
 	protected ServerSocket balancerSocket = null;
 	protected Thread runningThread = null;
 	protected boolean balancerRunning = true;
+	protected int clientCount = 0;
+	protected List<SocketUsagePair> socketUsage = new ArrayList<SocketUsagePair>();
 	
 	
 	public LoadBalancer(int port) {
@@ -46,8 +50,30 @@ public class LoadBalancer implements Runnable{
 				throw new RuntimeException("Error accepting client connection.", e);
 			}
 			
+			
 			//send the request to a new thread
-			new Thread(new BalancerWorker(clientSocket)).start();
+			new Thread(new BalancerWorker(clientSocket, ++clientCount)).start();
+		}
+	}
+	
+	public Socket getQuietSocket() {
+		int minUsage = 9999;
+		Socket minSocket = null;
+		for(int i = 0; i < socketUsage.size(); ++i) {
+			if(socketUsage.get(i).usage() < minUsage ) {
+				minSocket = socketUsage.get(i).db();
+				minUsage = socketUsage.get(i).usage();
+			}
+		}
+		
+		return minSocket;
+	}
+	
+	private void getUsage() {
+		for(int i = 0; i < socketUsage.size(); ++i) {
+			Socket dbSocket = socketUsage.get(i).db();
+			
+			
 		}
 	}
 
