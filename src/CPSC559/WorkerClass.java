@@ -2,6 +2,8 @@
 import java.io.IOException;
 import java.lang.Object;
 import java.net.Socket;
+import java.io.InputStream;
+import java.util.Arrays;
 
 public class WorkerClass {
     public static void main(String[]args) throws IOException {
@@ -12,6 +14,17 @@ public class WorkerClass {
         //public Socket(InetAddress address,
         //      int port)
         Socket connect = new Socket("localhost",9000);
+        
+        InputStream input = connect.getInputStream();
+        
+        char nextChar = (char) input.read();
+        
+        while(nextChar != '\0') {
+        	System.out.print( nextChar );
+        	nextChar = (char) input.read();
+        }
+        
+        input.close();
 
     }
 }
