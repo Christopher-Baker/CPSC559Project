@@ -2,7 +2,7 @@
 .project
 .DS_Store
 .idea/
-JavaFiles.iml
+*.iml
 src/CPSC559/BalancerTester.java
 out/
 /bin/
