@@ -1,3 +1,5 @@
+package CPSC559;
+
 import java.net.ServerSocket;
 import java.net.Socket;
 

@@ -1,3 +1,4 @@
+package CPSC559;
 
 //Multi-threadable class to act as a client to the database servers
 public class BalancerAsClient implements Runnable {

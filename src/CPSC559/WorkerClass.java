@@ -1,4 +1,4 @@
-//package CPSC559;
+package CPSC559;
 import java.io.IOException;
 import java.lang.Object;
 import java.net.Socket;
