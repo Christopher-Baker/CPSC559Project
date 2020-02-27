@@ -1,0 +1,78 @@
+package CPSC559;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;  
+import java.util.ArrayList;
+import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.io.IOException;
+
+
+public class BookDB {
+    public String filepath;
+
+    public BookDB(String file) {
+        this.filepath = file;
+    }
+
+    public synchronized void addBook(Book book) throws IOException {
+        book.id = this.readHighestId() + 1;
+        String toAdd = String.join(",", Integer.toString(book.id), book.title, Integer.toString(book.holder));
+        toAdd += "\n";
+        BufferedWriter writer = new BufferedWriter(new FileWriter(this.filepath, true));
+        writer.write(toAdd);
+        writer.close();
+    }
+
+    ///
+    // Return the first book whose data in the specified column matches the specified key
+    ///
+    public Book getBook(String key, int col) throws IOException {
+        List<String> data = new ArrayList<>(Files.readAllLines(Paths.get(this.filepath), StandardCharsets.UTF_8));
+        for (int i = 0; i < data.size(); i++) {
+            String[] items = data.get(i).split(",", 0);
+            if (String.valueOf(items[col]).equals(key)) {
+                Book book = new Book(items[1]);
+                book.id = Integer.parseInt(items[0]);
+                book.holder = Integer.parseInt(items[2]);
+                return book;
+            }
+        }
+        return null;
+    }
+
+    ///
+    // Updates a book, b, based off the id
+    // The id should never be manually changed so this shouldn't be a problem
+    // The book b should have both a title and holder specified
+    //
+    public synchronized void updateBook(Book b) throws IOException {
+        List<String> data = new ArrayList<>(Files.readAllLines(Paths.get(this.filepath), StandardCharsets.UTF_8));
+        for (int i = 0 ; i < data.size(); i++) {
+            String[] items = data.get(i).split(",", 0);
+            if (b.id == Integer.parseInt(items[0])) {
+                String toUpdate = String.join(",", Integer.toString(b.id), b.title, Integer.toString(b.holder));
+                data.set(i, toUpdate);
+                break;
+            }
+        }
+        Files.write(Paths.get(this.filepath), data, StandardCharsets.UTF_8);
+    }
+
+    // TODO implement a delete function if necessary 
+
+    private int readHighestId() throws IOException {
+        int maxId = -1;
+        List<String> data = new ArrayList<>(Files.readAllLines(Paths.get(this.filepath), StandardCharsets.UTF_8));
+        for (int i = 0; i < data.size(); i++) {
+            String[] items = data.get(i).split(",", 0);
+            if (Integer.parseInt(items[0]) > maxId) {
+                maxId = Integer.parseInt(items[0]);
+            }
+        }
+        return maxId;
+    }
+}
