@@ -1,3 +1,5 @@
+package CPSC559;
+
 import java.net.Socket;
 
 public class SocketUsagePair {
