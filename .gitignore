@@ -1,6 +1,9 @@
 .classpath
 .project
 .idea
+<<<<<<< HEAD
 JavaFiles.iml
+=======
+>>>>>>> master
 src/CPSC559/BalancerTester.java
 
