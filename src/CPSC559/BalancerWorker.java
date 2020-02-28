@@ -10,6 +10,8 @@ public class BalancerWorker implements Runnable {
 	protected Socket clientSocket = null;
 	protected int clientID;
 	
+	protected boolean isRunning = true;
+	
 	public BalancerWorker(Socket clientSocket, int clientID) {
 		this.clientSocket = clientSocket;
 		this.clientID = clientID;
@@ -23,6 +25,10 @@ public class BalancerWorker implements Runnable {
 			OutputStream output = clientSocket.getOutputStream();
 			
 			output.write(("BalanceWorker is running.\nYour ID is: " + this.clientID + '\0').getBytes());
+			while(isRunning) {
+				
+			}
+			
 			output.close();
 			input.close();
 			

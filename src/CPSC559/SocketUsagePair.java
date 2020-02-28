@@ -2,12 +2,14 @@ package CPSC559;
 
 import java.net.Socket;
 
+import CPSC559.BalancerWorkerToDB;
+
 public class SocketUsagePair {
 	private int usage;
-	private final Socket dbSocket;
+	private final BalancerWorkerToDB dbSocket;
 	private final int dbID;
 	
-	public SocketUsagePair(Socket dbSocket, int usage, int dbID) {
+	public SocketUsagePair(BalancerWorkerToDB dbSocket, int usage, int dbID) {
 		this.usage = usage;
 		this.dbSocket = dbSocket;
 		this.dbID = dbID;
@@ -17,7 +19,11 @@ public class SocketUsagePair {
 		return this.usage;
 	}
 	
-	public Socket db() {
+	public void setUsage(int usage) {
+		this.usage = usage;
+	}
+	
+	public BalancerWorkerToDB db() {
 		return this.dbSocket;
 	}
 	
