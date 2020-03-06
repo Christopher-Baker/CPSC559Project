@@ -7,8 +7,9 @@ import java.util.List;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.Path;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class UserDB {
     public String filepath;
@@ -61,7 +62,32 @@ public class UserDB {
         Files.write(Paths.get(this.filepath), data, StandardCharsets.UTF_8);
     }
 
-    // TODO implement a delete function if necessary
+    public synchronized void deleteUser(int id) throws IOException {
+        List<String> data = new ArrayList<>(Files.readAllLines(Paths.get(this.filepath), StandardCharsets.UTF_8));
+        for (int i = 0 ; i < data.size(); i++) {
+            String[] items = data.get(i).split(",", 0);
+            if (id == Integer.parseInt(items[0])) {
+                data.remove(i);
+                break;
+            }
+        }
+        Files.write(Paths.get(this.filepath), data, StandardCharsets.UTF_8);
+    }
+
+    ///
+    // Get the md5 hash of the database file
+    ///
+    public byte[] getHash() throws IOException {
+        byte[] hash = null;
+        try {
+            byte[] b = Files.readAllBytes(Paths.get(this.filepath));
+            hash = MessageDigest.getInstance("MD5").digest(b);
+        }
+        catch (NoSuchAlgorithmException n) {
+            System.err.println("Unknown hashnig algorithm specified" + n.getMessage());
+        }
+        return hash;
+    }
 
     private int readHighestId() throws IOException {
         int maxId = -1;
