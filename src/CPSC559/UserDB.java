@@ -49,7 +49,7 @@ public class UserDB {
     // The id should never be manually changed so this shouldn't be a problem
     // The user u should have no null fields
     //
-    public synchronized void updateBook(User u) throws IOException {
+    public synchronized void updateUser(User u) throws IOException {
         List<String> data = new ArrayList<>(Files.readAllLines(Paths.get(this.filepath), StandardCharsets.UTF_8));
         for (int i = 0 ; i < data.size(); i++) {
             String[] items = data.get(i).split(",", 0);
