@@ -11,4 +11,8 @@ public class User {
         this.lName = lname;
         this.fines = 0.0;
     }
+
+    public String toString() {
+        return String.format("ID: %d First Name: %s Last Name: %s Fines Outstanding: %f", id, fName, lName, fines);
+    }
 }
