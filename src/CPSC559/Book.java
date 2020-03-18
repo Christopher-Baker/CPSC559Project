@@ -9,4 +9,8 @@ public class Book {
         this.title = title;
         this.holder = -1;
     }
+
+    public String toString() {
+        return String.format("ID: %d Title: %s Holder ID: %d", this.id, this.title, this.holder); 
+    }
 }
