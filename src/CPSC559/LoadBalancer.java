@@ -15,7 +15,6 @@ public class LoadBalancer implements Runnable{
 	protected Thread runningThread = null;
 	protected boolean balancerRunning = true;
 	protected int clientCount = 0;
-	protected List<SocketUsagePair> socketUsage = new ArrayList<SocketUsagePair>();
 	
 	
 	public LoadBalancer() {
@@ -30,6 +29,12 @@ public class LoadBalancer implements Runnable{
 		synchronized (this) {
 			this.runningThread = Thread.currentThread();
 		}
+		
+		//Start the usage checker threads
+		for(int i = 0; i < 9; ++i) {
+			new Thread(new UsageChecker(i)).start();
+		}
+		
 		//Starting the server on the specified port
 		try {
 			this.balancerSocket = new ServerSocket(this.balancerPort);
@@ -40,6 +45,7 @@ public class LoadBalancer implements Runnable{
 		
 		while(balancerRunning) {
 			Socket clientSocket = null;
+			
 			//Accept incoming connection request
 			try {
 				clientSocket = this.balancerSocket.accept();

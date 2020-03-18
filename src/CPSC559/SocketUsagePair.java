@@ -6,13 +6,11 @@ import CPSC559.BalancerWorkerToDB;
 
 public class SocketUsagePair {
 	private int usage;
-	private final BalancerWorkerToDB dbSocket;
-	private final int dbID;
+	private final int portNum;
 	
-	public SocketUsagePair(BalancerWorkerToDB dbSocket, int usage, int dbID) {
+	public SocketUsagePair(int portNum, int usage) {
 		this.usage = usage;
-		this.dbSocket = dbSocket;
-		this.dbID = dbID;
+		this.portNum = portNum;
 	}
 	
 	public int usage() {
@@ -23,11 +21,8 @@ public class SocketUsagePair {
 		this.usage = usage;
 	}
 	
-	public BalancerWorkerToDB db() {
-		return this.dbSocket;
+	public int portNum() {
+		return this.portNum;
 	}
 	
-	public int dbID() {
-		return this.dbID;
-	}
 }
