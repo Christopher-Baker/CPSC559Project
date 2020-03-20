@@ -11,10 +11,11 @@ public class Client {
 	
 	public static void printHelpOutput() {
 		System.out.println("quit, (q)");
-		System.out.println("search [String bookName], (s [String bookName])");
-		System.out.println("borrow [String bookName], (b [String bookName])");
-		System.out.println("return [String bookname], (r [String bookName])");
-		System.out.println("payFees [String patronName], (p [String patronName])");
+		System.out.println("search,[String bookName] (s,[String bookName])");
+		System.out.println("searchUser,[String userLastName] (u,[String UserLastName)");
+		System.out.println("borrow,[int userID],[int bookID] (b,[int userID],[int bookID])");
+		System.out.println("return,[int bookID] (r,[int bookID])");
+		System.out.println("adjustFees,[int userID],[double feeChangeAmount] (f,[int userID],[double feeChangeAmount])");
 		System.out.println("kill [int servNum], (k [int servNum])");
 		System.out.println("\t1 - replicate 1");
 		System.out.println("\t2 - replicate 2");
@@ -89,7 +90,7 @@ public class Client {
 			boolean quitApplication = false;
 			while(quitApplication == false) {
 				String usrInput = kbReader.nextLine();
-				String[] usrInputArr = usrInput.split(" ");
+				String[] usrInputArr = usrInput.split(",");
 				if(usrInputArr.length == 1) {
 					if(usrInput.equalsIgnoreCase("quit") || usrInput.equalsIgnoreCase("q")) {
 						quitApplication = true;
@@ -101,54 +102,82 @@ public class Client {
 				else if (usrInputArr.length == 0 || usrInputArr.length > 2){
 					Client.invalidCommand();
 				}
-				else if(usrInputArr.length == 2) {
+				else {
 					boolean commandValid = true;
 					String command = usrInputArr[0];
-					String option = usrInputArr[1];
+					//String option = usrInputArr[1];
 					
-					if(command.equalsIgnoreCase("search") || command.equalsIgnoreCase("s")) {
-						String request = "s_" + usr + "_" + option + "\n";
-						Client.sendRequest(toTheSocket, request);
-					}
-					else if(command.equalsIgnoreCase("borrow") || command.equalsIgnoreCase("b")) {
-						String request = "b_" + usr + "_" + option + "\n";
-						Client.sendRequest(toTheSocket, request);
-					}
-					else if(command.equalsIgnoreCase("return") || command.equalsIgnoreCase("r")) {
-						String request = "r_" + usr + "_" + option + "\n";
-						Client.sendRequest(toTheSocket, request);
-					}
-					else if(command.equalsIgnoreCase("payFees") || command.equalsIgnoreCase("p")) {
-						String request = "p_" + usr + "_" + option + "\n";
-						Client.sendRequest(toTheSocket, request);
-					}
-					else if(command.equalsIgnoreCase("kill") || command.equalsIgnoreCase("k")) {
-						try {
-							int optionNum = Integer.parseInt(option);
-							if(optionNum == 0 || optionNum > 4) {
-								throw new NumberFormatException();
-							}
-							String request = "k_"+ optionNum + "\n";
+					if (command.equalsIgnoreCase("search") || command.equalsIgnoreCase("s")) {
+						if (usrInputArr.length == 2) {
+							String request = "s_" + usrInputArr[1] + "\n";
 							Client.sendRequest(toTheSocket, request);
+						} else {
+							Client.printHelpOutput();
 						}
-						catch(NumberFormatException e) {
-							commandValid = false;
-							Client.invalidCommand();
+						
+					}
+					else if (command.equalsIgnoreCase("searchUser") || command.equalsIgnoreCase("u")) {
+						if (usrInputArr.length == 2) {
+							String request = "u_" + usrInputArr[1] + "\n";
+							Client.sendRequest(toTheSocket, request);
+						} else {
+							Client.printHelpOutput();	
 						}
 					}
-					else if(command.equalsIgnoreCase("fixServer") || command.equalsIgnoreCase("f")) {
-						try {
-							int optionNum = Integer.parseInt(option);
-							if(optionNum == 0 || optionNum > 4) {
-								throw new NumberFormatException();
-							}
-							String request = "f_"+ optionNum + "\n";
+					else if (command.equalsIgnoreCase("borrow") || command.equalsIgnoreCase("b")) {
+						if (usrInputArr.length == 3) {
+							String request = "b_" + usrInputArr[1] + "_" + usrInputArr[2] + "\n";
 							Client.sendRequest(toTheSocket, request);
+						} else {
+							Client.printHelpOutput();
+						}	
+					}
+					else if (command.equalsIgnoreCase("return") || command.equalsIgnoreCase("r")) {
+						if (usrInputArr.length == 2) {
+							String request = "r_" + usrInputArr[1] + "\n";
+							Client.sendRequest(toTheSocket, request);
+						} else {
+							Client.printHelpOutput();
+						}	
+					}
+					else if  (command.equalsIgnoreCase("adjustFees") || command.equalsIgnoreCase("f")) {
+						if (usrInputArr.length == 3) {
+							String request = "f_" + usrInputArr[1] + "_" + usrInputArr[2] + "\n";
+							Client.sendRequest(toTheSocket, request);
+						} else {
+							Client.printHelpOutput();
 						}
-						catch(NumberFormatException e) {
-							commandValid = false;
-							Client.invalidCommand();
-						}
+					}
+					else if (command.equalsIgnoreCase("kill") || command.equalsIgnoreCase("k")) {
+						System.out.println("The kill command is unsupported at this time");
+						// TODO Make this and the fix command work or remove them
+						// try {
+						// 	int optionNum = Integer.parseInt(option);
+						// 	if(optionNum == 0 || optionNum > 4) {
+						// 		throw new NumberFormatException();
+						// 	}
+						// 	String request = "k_"+ optionNum + "\n";
+						// 	Client.sendRequest(toTheSocket, request);
+						// }
+						// catch(NumberFormatException e) {
+						// 	commandValid = false;
+						// 	Client.invalidCommand();
+						// }
+					}
+					else if (command.equalsIgnoreCase("fixServer") || command.equalsIgnoreCase("f")) {
+						System.out.println("The fix command is unsupported at this time");
+						// try {
+						// 	int optionNum = Integer.parseInt(option);
+						// 	if(optionNum == 0 || optionNum > 4) {
+						// 		throw new NumberFormatException();
+						// 	}
+						// 	String request = "f_"+ optionNum + "\n";
+						// 	Client.sendRequest(toTheSocket, request);
+						// }
+						// catch(NumberFormatException e) {
+						// 	commandValid = false;
+						// 	Client.invalidCommand();
+						// }
 					}
 					else {
 						commandValid = false;
@@ -173,8 +202,5 @@ public class Client {
 		catch(NullPointerException e) {
 			//Silence this exception
 		}
-		
-		
-		
 	}
 }

@@ -55,64 +55,53 @@ public class WorkerThread extends Thread {
     }
 
     public void run() {
-        boolean kill = false;
         try {
-            while(true) {
-                String command = input.readLine();
+            String command = input.readLine();
 
-                System.out.println("Processing command: " + command);
+            System.out.println("Processing command: " + command);
 
-                switch(command.split("_")[0]) {
-                    // TODO make client commands match up with these
-                    case "s":
-                        // Command format: s_BookTitle
-                        Book b = searchBook(command.split("_")[1]);
-                        if (b == null) {
-                            output.println("nack");
-                        } else {
-                            output.println(b.toString());
-                        }
-                        break;
-                    case "u":
-                        // Command format: u_userLastName
-                        User u = searchUser(command.split("_")[1]);
-                        if (u == null) {
-                            output.println("nack");
-                        } else {
-                            output.println(u.toString());
-                        }
-                    case "b":
-                        // Command format: b_userID_bookID
-                        boolean success = borrow(command.split("_")[1],command.split("_")[2]);
-                        if (success) {
-                            output.println("ack");
-                        } else {
-                            output.println("nack");
-                        }
-                        break;
-                    case "r":
-                        // Command format: r_bookID
-                        returnBook(command.split("_")[1]);
-                        output.println("ack");
-                        break;
-                    case "f":
-                        // Command format: f_userID_feeChangeAmount
-                        modifyFees(command.split("_")[1], command.split("_")[2]);
-                        output.println("ack");
-                        break;
-                    case "k":
-                        System.out.println("Killing this branch replica...");
-                        kill = true;
-                        break;
-                    case "h":
-                        // Command format: h
-                        // Heartbeat
-                        output.println("alive");
-                        break;
-                }
-                if (kill) {
+            switch(command.split("_")[0]) {
+                case "s":
+                    // Command format: s_BookTitle
+                    Book b = searchBook(command.split("_")[1]);
+                    if (b == null) {
+                        output.println("nack");
+                    } else {
+                        output.println(b.toString());
+                    }
                     break;
-                }
+                case "u":
+                    // Command format: u_userLastName
+                    User u = searchUser(command.split("_")[1]);
+                    if (u == null) {
+                        output.println("nack");
+                    } else {
+                        output.println(u.toString());
+                    }
+                case "b":
+                    // Command format: b_userID_bookID
+                    boolean success = borrow(command.split("_")[1],command.split("_")[2]);
+                    if (success) {
+                        output.println("ack");
+                    } else {
+                        output.println("nack");
+                    }
+                    break;
+                case "r":
+                    // Command format: r_bookID
+                    returnBook(command.split("_")[1]);
+                    output.println("ack");
+                    break;
+                case "f":
+                    // Command format: f_userID_feeChangeAmount
+                    modifyFees(command.split("_")[1], command.split("_")[2]);
+                    output.println("ack");
+                    break;
+                case "h":
+                    // Command format: h
+                    // Heartbeat
+                    output.println("ack");
+                    break;
             }
         } catch (Exception e) {
             System.err.println("Encountered Exception: " + e.getMessage());
