@@ -14,17 +14,8 @@ public class WorkerClass {
     public static int port;
     public static UserDB UDB;
     public static BookDB BDB;
-    //todo
     
-
-
     public static void main(String[]args) throws IOException {
-        //TODO open port and listen for leader process
-        //TODO execute leader process on the dB
-        //TODO notify other proceses of db change/acknowledges
-        System.out.println("hello java welcome back");
-        //public Socket(InetAddress address,
-        //      int port)
         try{
             if (args.length != 3) {
                 System.err.println("Arguments must be in the form <Server Port> <User DB full file path> <Book DB full file path>");
@@ -48,11 +39,13 @@ public class WorkerClass {
                 WorkerThread wt = new WorkerThread(UDB, BDB, output, input);
                 wt.start();
                 // TODO figure out how to kill this loop from thread
+                    // This may be impossible, we may just have to ctrl-c to kill 
             }
 
             input.close();
             output.close();
             connect.close();
+            ss.close();
         } catch (ConnectException ce){
             System.out.println("Can not establish the connection");
         } catch (Exception e){
