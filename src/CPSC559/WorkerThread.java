@@ -1,21 +1,26 @@
 package CPSC559;
 
 import java.lang.Thread;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class WorkerThread extends Thread {
     protected UserDB UDB;
     protected BookDB BDB;
     protected PrintWriter output;
     protected BufferedReader input;
+    protected ArrayList<Integer> siblings;
 
-    WorkerThread(UserDB u, BookDB b, PrintWriter output, BufferedReader input) {
+    WorkerThread(UserDB u, BookDB b, PrintWriter output, BufferedReader input, ArrayList<Integer> siblings) {
         this.UDB = u;
         this.BDB = b;
         this.output = output;
         this.input = input;
+        this.siblings = siblings;
     }
 
     public Book searchBook(String bookTitle) throws IOException {
@@ -54,6 +59,28 @@ public class WorkerThread extends Thread {
         UDB.updateUser(u);
     }
 
+    public void forwardRequest(String request) {
+        for(int i = 0; i < siblings.size(); i++) {
+            try {
+                Socket connect = new Socket("localhost", siblings.get(i));
+                PrintWriter forwarder = new PrintWriter(connect.getOutputStream());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+                connect.setSoTimeout(10000); // So the thread doesn't hang waiting for a response from other server, this will go 10 seconds max
+                forwarder.println(request);
+                String line = reader.readLine();
+                if (line != "ack") {
+                    connect.close();
+                    throw new Exception("Server on port " + siblings.get(i) + " failed to acknowldge a forwarded message");
+                }
+                forwarder.close();
+                reader.close();
+                connect.close();
+            } catch (Exception e) {
+                System.err.println("Error occured while trying to forward request to server on port " + siblings.get(i) +"\nMessage: " + e.getMessage());
+            }
+        }
+    }
+
     public void run() {
         try {
             String command = input.readLine();
@@ -83,6 +110,7 @@ public class WorkerThread extends Thread {
                     boolean success = borrow(command.split("_")[1],command.split("_")[2]);
                     if (success) {
                         output.println("ack");
+                        forwardRequest(command);
                     } else {
                         output.println("nack");
                     }
@@ -91,11 +119,13 @@ public class WorkerThread extends Thread {
                     // Command format: r_bookID
                     returnBook(command.split("_")[1]);
                     output.println("ack");
+                    forwardRequest(command);
                     break;
                 case "f":
                     // Command format: f_userID_feeChangeAmount
                     modifyFees(command.split("_")[1], command.split("_")[2]);
                     output.println("ack");
+                    forwardRequest(command);
                     break;
                 case "h":
                     // Command format: h
