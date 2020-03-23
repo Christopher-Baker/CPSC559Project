@@ -2,6 +2,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.net.ResponseCache;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -9,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import CPSC559.LoadBalancer;
 import CPSC559.SocketUsagePair;
 
 public class UsageChecker implements Runnable {
@@ -24,7 +26,10 @@ public class UsageChecker implements Runnable {
 	private boolean connectionGood = false;
 	
 	public UsageChecker(int id) {
-		init();
+		if(!initialized) {
+			initialized = true;
+			init();
+		}
 		this.id = id;
 		this.portNum = socketUsage.get(id).portNum();
 	}
@@ -35,6 +40,8 @@ public class UsageChecker implements Runnable {
 		while(!connectionGood) {
 			try{
 				dbSocket = new Socket("localhost", this.portNum);
+				dbSocket.setSoTimeout(10*1000);
+				
 				toDB = new PrintWriter(dbSocket.getOutputStream());
 				fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
 				connectionGood = true;
@@ -45,8 +52,12 @@ public class UsageChecker implements Runnable {
 			}
 		}
 		
-		//TODO frequency to update the usage
 		this.updateUsage();
+		if(connectionGood) {
+			if(!LoadBalancer.hasLeader()) {
+				leaderElection();
+			}
+		}
 		
 
 	}
@@ -55,20 +66,23 @@ public class UsageChecker implements Runnable {
 		this.toDB.print("usage Request Message...\n"); //TODO change to usage request
 		this.toDB.flush();
 		String response;
+		
 		try {
 			response = this.fromDB.readLine();
-			while(response == null) {
-				response = this.fromDB.readLine();
-				if(false /*timeout condition */) { //TODO set the timeout condition
-					throw new Exception("Server timeout!");
-				}
-			}
 			
 			socketUsage.get(this.id).setUsage(Integer.parseInt(response));
 			
-		} catch (Exception e) {
+		} catch (SocketTimeoutException e) {
+			//Set current usage to -1
+			socketUsage.get(this.id).setUsage(-1);
+			connectionGood = false;
+		} 
+		
+		catch (Exception e) {
 			System.out.println("Unable to read usage response from server.");
 			System.err.println(e.getMessage());
+			
+			//TODO remote restart server?
 			
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
@@ -76,13 +90,11 @@ public class UsageChecker implements Runnable {
 	}
 	
 	private static synchronized void init() {
-		if(!initialized) {
-			for(int i = 9001; i < 9010; ++i) {
-				socketUsage.add(new SocketUsagePair(i, -1));
-			}
-			
-			initialized = true;
+		
+		for(int i = 9001; i < 9010; ++i) {
+			socketUsage.add(new SocketUsagePair(i, -1));
 		}
+
 	}
 	
 	public static synchronized int getQuietPort() {
@@ -101,4 +113,24 @@ public class UsageChecker implements Runnable {
 		return minPort;
 	}
 
+	public static synchronized int leaderElection() {
+		int minUsage = 9999;
+		int newPort = -1;
+		for(int i = 0; i < socketUsage.size(); ++i) {
+			if(socketUsage.get(i).usage() < minUsage && socketUsage.get(i).usage() > 0){
+				minUsage = socketUsage.get(i).usage();
+				newPort = socketUsage.get(i).portNum();
+			}
+		}
+		
+		return newPort;
+	}
+
+	public static synchronized void dcPort(int port) {
+		for(int i = 0; i < socketUsage.size(); ++i) {
+			if(socketUsage.get(i).portNum() == port) {
+				socketUsage.get(i).setUsage(-1);
+			}
+		}
+	}
 }

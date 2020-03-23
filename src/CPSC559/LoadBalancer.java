@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import java.io.IOException;
 
 //Class in charge of load balancer server
@@ -15,6 +16,7 @@ public class LoadBalancer implements Runnable{
 	protected Thread runningThread = null;
 	protected boolean balancerRunning = true;
 	protected int clientCount = 0;
+	private static int leaderPort = -1;
 	
 	
 	public LoadBalancer() {
@@ -74,6 +76,22 @@ public class LoadBalancer implements Runnable{
 		catch (IOException e) {
 			throw new RuntimeException("Error closing the load balancer.", e);
 		}
+	}
+	
+	public static synchronized boolean hasLeader() {
+		return leaderPort == -1;
+	}
+	
+	public static synchronized void clearLeader() {
+		leaderPort = -1;
+	}
+	
+	public static synchronized void setLeader(int newPort) {
+		leaderPort = newPort;
+	}
+	
+	public static synchronized int getLeader() {
+		return leaderPort;
 	}
 
 }

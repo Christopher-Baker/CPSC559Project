@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+
+import CPSC559.LoadBalancer;
 
 //Class to handle all the client requests to the load balancer
 public class BalancerWorker implements Runnable {
@@ -15,6 +18,7 @@ public class BalancerWorker implements Runnable {
 	protected int clientID;
 	
 	protected boolean isRunning = true;
+	private boolean connectedToLeader = false;
 	
 	protected BufferedReader fromClient = null;
 	protected PrintWriter toClient = null;
@@ -38,24 +42,61 @@ public class BalancerWorker implements Runnable {
 			while(isRunning) {
 				
 				String requestFromClient = this.fromClient.readLine();
-				if(requestFromClient.startsWith("s_")) { //read only. Any servers can handle
-					this.dbSocket = new Socket("localhost", UsageChecker.getQuietPort());
-				}
-				else { //write requests. Send to leader server
-					//TODO get leader portNum
+				int talkTo;
+				String response;
+				boolean haveResponse = false;
+				
+				
+				while(!haveResponse) {
+					try {
+						if(requestFromClient.startsWith("s_")) { //read only. Any servers can handle
+							talkTo = UsageChecker.getQuietPort();
+							if(talkTo == LoadBalancer.getLeader()) {
+								connectedToLeader = true;
+							}
+							else {
+								connectedToLeader = false;
+							}
+						}
+						else { //write requests. Send to leader server
+							connectedToLeader = true;
+							talkTo = LoadBalancer.getLeader();
+						}
+						
+						this.dbSocket = new Socket("localhost", talkTo);
+						this.dbSocket.setSoTimeout(10*1000);
+						
+						this.fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
+						this.toDB = new PrintWriter(dbSocket.getOutputStream());
+						
+						this.toDB.print(requestFromClient);
+						this.toDB.flush();
+						
+						
+						response = this.fromDB.readLine();
+						haveResponse = true;
+					} catch (SocketTimeoutException e) {
+						//Set current port to DC
+						UsageChecker.dcPort(talkTo);
+						this.toDB.close();
+						this.fromDB.close();
+						this.dbSocket.close();
+						
+						//if leader, elect new leader
+						if(connectedToLeader) {
+							LoadBalancer.clearLeader();
+							if(!LoadBalancer.hasLeader()) {
+								LoadBalancer.setLeader(UsageChecker.leaderElection());
+							}
+							
+							connectedToLeader = false;
+						}
+					}
 				}
 				
-				this.fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
-				this.toDB = new PrintWriter(dbSocket.getOutputStream());
-				
-				this.toDB.print(requestFromClient);
-				this.toDB.flush();
 				
 				this.toDB.close();
 				this.fromDB.close();
-				
-				String response = this.fromDB.readLine();
-				//TODO check for timeout
 				
 				this.toClient.print(response);
 				this.toClient.flush();
