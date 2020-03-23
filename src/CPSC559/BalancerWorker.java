@@ -42,6 +42,7 @@ public class BalancerWorker implements Runnable {
 			while(isRunning) {
 				
 				String requestFromClient = this.fromClient.readLine();
+
 				int talkTo;
 				String response;
 				boolean haveResponse = false;
