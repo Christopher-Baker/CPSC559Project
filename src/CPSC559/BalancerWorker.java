@@ -38,7 +38,7 @@ public class BalancerWorker implements Runnable {
 			while(isRunning) {
 				
 				String requestFromClient = this.fromClient.readLine();
-				if(requestFromClient.startsWith("s_")) { //read only. Any servers can handle
+				if(requestFromClient.startsWith("s_") || requestFromClient.startsWith("u_")) { //read only. Any servers can handle
 					this.dbSocket = new Socket("localhost", UsageChecker.getQuietPort());
 				}
 				else { //write requests. Send to leader server
