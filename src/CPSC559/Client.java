@@ -16,16 +16,6 @@ public class Client {
 		System.out.println("borrow,[int userID],[int bookID] (b,[int userID],[int bookID])");
 		System.out.println("return,[int bookID] (r,[int bookID])");
 		System.out.println("adjustFees,[int userID],[double feeChangeAmount] (f,[int userID],[double feeChangeAmount])");
-		System.out.println("kill [int servNum], (k [int servNum])");
-		System.out.println("\t1 - replicate 1");
-		System.out.println("\t2 - replicate 2");
-		System.out.println("\t3 - replicate 3");
-		System.out.println("\t4 - user 'DB'");
-		System.out.println("fixServer [int servNum], (f [int servNum])");
-		System.out.println("\t1 - replicate 1");
-		System.out.println("\t2 - replicate 2");
-		System.out.println("\t3 - replicate 3");
-		System.out.println("\t4 - user 'DB'");
 	}
 	
 	public static void invalidCommand() {
