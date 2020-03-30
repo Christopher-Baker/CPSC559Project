@@ -1,9 +1,5 @@
 package CPSC559;
 
-import java.net.Socket;
-
-import CPSC559.BalancerWorkerToDB;
-
 public class SocketUsagePair {
 	private int usage;
 	private final int portNum;

@@ -1,12 +1,16 @@
 package CPSC559;
 
 import java.lang.Thread;
+import java.lang.management.ManagementFactory;
+
+import com.sun.management.OperatingSystemMXBean;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.Math;
 
 public class WorkerThread extends Thread {
     protected UserDB UDB;
@@ -131,6 +135,13 @@ public class WorkerThread extends Thread {
                     // Command format: h
                     // Heartbeat
                     output.println("ack");
+                    break;
+                case "l":
+                    // Command format: l
+                    // get load
+                    OperatingSystemMXBean osmxb = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+                    int load = Math.toIntExact(Math.round(osmxb.getProcessCpuLoad()));
+                    output.println(load);
                     break;
             }
         } catch (Exception e) {
