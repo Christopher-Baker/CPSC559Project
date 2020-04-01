@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import sun.tools.tree.ThisExpression;
 
 import java.io.IOException;
 
@@ -82,8 +83,10 @@ public class LoadBalancer implements Runnable{
 		return leaderPort == -1;
 	}
 	
-	public static synchronized void clearLeader() {
-		leaderPort = -1;
+	public static synchronized void clearLeader(int processLeader) {
+		if(processLeader == leaderPort) {
+			leaderPort = -1;
+		}
 	}
 	
 	public static synchronized void setLeader(int newPort) {

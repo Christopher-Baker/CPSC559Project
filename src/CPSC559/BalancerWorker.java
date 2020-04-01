@@ -74,8 +74,8 @@ public class BalancerWorker implements Runnable {
 						this.toDB.flush();
 						
 						
-						response = this.fromDB.readLine();
-						haveResponse = true;
+						response = this.fromDB.readLine(); //TODO if not begins with requestFromClient, try again
+						haveResponse = true;//TODO modify replica response to concatenate cmd and resp
 					} catch (SocketTimeoutException e) {
 						//Set current port to DC
 						UsageChecker.dcPort(talkTo);
@@ -85,7 +85,7 @@ public class BalancerWorker implements Runnable {
 						
 						//if leader, elect new leader
 						if(connectedToLeader) {
-							LoadBalancer.clearLeader();
+							LoadBalancer.clearLeader(talkTo);
 							if(!LoadBalancer.hasLeader()) {
 								LoadBalancer.setLeader(UsageChecker.leaderElection());
 							}
