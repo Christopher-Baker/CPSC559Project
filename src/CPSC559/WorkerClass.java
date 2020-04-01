@@ -17,7 +17,7 @@ public class WorkerClass {
     public static ArrayList<Integer> siblings;    
     public static void main(String[]args) throws IOException {
         try{
-            if (args.length != 3) {
+            if (args.length != 4) {
                 System.err.println("Arguments must be in the form <Server Port> <User DB full file path> <Book DB full file path> <sibling servers by port seperated by comma>");
                 System.err.println("For example: java CPSC559.WorkerClass 9001 /home/userDB.csv /home/bookDB.csv 9002,9003,9004");
             }

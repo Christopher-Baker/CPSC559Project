@@ -1,3 +1,5 @@
+package CPSC559;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.net.ResponseCache;
@@ -63,7 +65,7 @@ public class UsageChecker implements Runnable {
 	}
 	
 	private void updateUsage() {
-		this.toDB.print("usage Request Message...\n"); //TODO change to usage request
+		this.toDB.println("l");
 		this.toDB.flush();
 		String response;
 		
