@@ -33,9 +33,11 @@ public class LoadBalancer implements Runnable{
 			this.runningThread = Thread.currentThread();
 		}
 		
+		int numberOfReplicas = 3;
+		
 		//Start the usage checker threads
-		for(int i = 0; i < 9; ++i) {
-			new Thread(new UsageChecker(i)).start();
+		for(int i = 0; i < numberOfReplicas; ++i) {
+			new Thread(new UsageChecker(i, numberOfReplicas)).start();
 		}
 		
 		//Starting the server on the specified port

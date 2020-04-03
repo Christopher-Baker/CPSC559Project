@@ -27,10 +27,10 @@ public class UsageChecker implements Runnable {
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
 	
-	public UsageChecker(int id) {
+	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
 			initialized = true;
-			init();
+			init(numOfReplicas);
 		}
 		this.id = id;
 		this.portNum = socketUsage.get(id).portNum();
@@ -91,9 +91,9 @@ public class UsageChecker implements Runnable {
 		}
 	}
 	
-	private static synchronized void init() {
+	private static synchronized void init(int numOfReplicas) {
 		
-		for(int i = 9001; i < 9010; ++i) {
+		for(int i = 9001; i < (9001 + numOfReplicas); ++i) {
 			socketUsage.add(new SocketUsagePair(i, -1));
 		}
 
