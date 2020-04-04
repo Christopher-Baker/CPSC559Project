@@ -78,110 +78,115 @@ public class Client {
 			Client.printHelpOutput();
 			
 			boolean quitApplication = false;
-			while(quitApplication == false) {
-				String usrInput = kbReader.nextLine();
-				String[] usrInputArr = usrInput.split(",");
-				if(usrInputArr.length == 1) {
-					if(usrInput.equalsIgnoreCase("quit") || usrInput.equalsIgnoreCase("q")) {
-						quitApplication = true;
+			try {
+				while(quitApplication == false) {
+					String usrInput = kbReader.nextLine();
+					String[] usrInputArr = usrInput.split(",");
+					System.out.println(usrInputArr.length);
+					if(usrInputArr.length == 1) {
+						if(usrInput.equalsIgnoreCase("quit") || usrInput.equalsIgnoreCase("q")) {
+							quitApplication = true;
+						}
+						else {
+							Client.invalidCommand();
+						}
 					}
-					else {
+					else if (usrInputArr.length == 0){
 						Client.invalidCommand();
 					}
-				}
-				else if (usrInputArr.length == 0 || usrInputArr.length > 2){
-					Client.invalidCommand();
-				}
-				else {
-					boolean commandValid = true;
-					String command = usrInputArr[0];
-					//String option = usrInputArr[1];
-					
-					if (command.equalsIgnoreCase("search") || command.equalsIgnoreCase("s")) {
-						if (usrInputArr.length == 2) {
-							String request = "s_" + usrInputArr[1] + "\n";
-							Client.sendRequest(toTheSocket, request);
-						} else {
-							Client.printHelpOutput();
-						}
+					else {
+						String command = usrInputArr[0];
+						//String option = usrInputArr[1];
+						System.out.println(command);
 						
-					}
-					else if (command.equalsIgnoreCase("searchUser") || command.equalsIgnoreCase("u")) {
-						if (usrInputArr.length == 2) {
-							String request = "u_" + usrInputArr[1] + "\n";
-							Client.sendRequest(toTheSocket, request);
-						} else {
-							Client.printHelpOutput();	
+						if (command.equalsIgnoreCase("search") || command.equalsIgnoreCase("s")) {
+							if (usrInputArr.length == 2) {
+								String request = "s_" + usrInputArr[1] + "\n";
+								Client.sendRequest(toTheSocket, request);
+								Client.handleServerResponse(responseFromSocket);
+							} else {
+								Client.printHelpOutput();
+							}
+							
 						}
-					}
-					else if (command.equalsIgnoreCase("borrow") || command.equalsIgnoreCase("b")) {
-						if (usrInputArr.length == 3) {
-							String request = "b_" + usrInputArr[1] + "_" + usrInputArr[2] + "\n";
-							Client.sendRequest(toTheSocket, request);
-						} else {
-							Client.printHelpOutput();
-						}	
-					}
-					else if (command.equalsIgnoreCase("return") || command.equalsIgnoreCase("r")) {
-						if (usrInputArr.length == 2) {
-							String request = "r_" + usrInputArr[1] + "\n";
-							Client.sendRequest(toTheSocket, request);
-						} else {
-							Client.printHelpOutput();
-						}	
-					}
-					else if  (command.equalsIgnoreCase("adjustFees") || command.equalsIgnoreCase("f")) {
-						if (usrInputArr.length == 3) {
-							String request = "f_" + usrInputArr[1] + "_" + usrInputArr[2] + "\n";
-							Client.sendRequest(toTheSocket, request);
-						} else {
-							Client.printHelpOutput();
+						else if (command.equalsIgnoreCase("searchUser") || command.equalsIgnoreCase("u")) {
+							if (usrInputArr.length == 2) {
+								String request = "u_" + usrInputArr[1] + "\n";
+								Client.sendRequest(toTheSocket, request);
+								Client.handleServerResponse(responseFromSocket);
+							} else {
+								Client.printHelpOutput();	
+							}
 						}
-					}
-					else if (command.equalsIgnoreCase("kill") || command.equalsIgnoreCase("k")) {
-						System.out.println("The kill command is unsupported at this time");
-						// TODO Make this and the fix command work or remove them
-						// try {
-						// 	int optionNum = Integer.parseInt(option);
-						// 	if(optionNum == 0 || optionNum > 4) {
-						// 		throw new NumberFormatException();
-						// 	}
-						// 	String request = "k_"+ optionNum + "\n";
-						// 	Client.sendRequest(toTheSocket, request);
-						// }
-						// catch(NumberFormatException e) {
-						// 	commandValid = false;
-						// 	Client.invalidCommand();
-						// }
-					}
-					else if (command.equalsIgnoreCase("fixServer") || command.equalsIgnoreCase("f")) {
-						System.out.println("The fix command is unsupported at this time");
-						// try {
-						// 	int optionNum = Integer.parseInt(option);
-						// 	if(optionNum == 0 || optionNum > 4) {
-						// 		throw new NumberFormatException();
-						// 	}
-						// 	String request = "f_"+ optionNum + "\n";
-						// 	Client.sendRequest(toTheSocket, request);
-						// }
-						// catch(NumberFormatException e) {
-						// 	commandValid = false;
-						// 	Client.invalidCommand();
-						// }
-					}
-					else {
-						commandValid = false;
-						Client.invalidCommand();
-					}
-					
-					if(commandValid == true) {
-						Client.handleServerResponse(responseFromSocket);
+						else if (command.equalsIgnoreCase("borrow") || command.equalsIgnoreCase("b")) {
+							if (usrInputArr.length == 3) {
+								String request = "b_" + usrInputArr[1] + "_" + usrInputArr[2] + "\n";
+								Client.sendRequest(toTheSocket, request);
+								Client.handleServerResponse(responseFromSocket);
+							} else {
+								Client.printHelpOutput();
+							}	
+						}
+						else if (command.equalsIgnoreCase("return") || command.equalsIgnoreCase("r")) {
+							if (usrInputArr.length == 2) {
+								String request = "r_" + usrInputArr[1] + "\n";
+								Client.sendRequest(toTheSocket, request);
+								Client.handleServerResponse(responseFromSocket);
+							} else {
+								Client.printHelpOutput();
+							}	
+						}
+						else if  (command.equalsIgnoreCase("adjustFees") || command.equalsIgnoreCase("f")) {
+							if (usrInputArr.length == 3) {
+								String request = "f_" + usrInputArr[1] + "_" + usrInputArr[2] + "\n";
+								Client.sendRequest(toTheSocket, request);
+								Client.handleServerResponse(responseFromSocket);
+							} else {
+								Client.printHelpOutput();
+							}
+						}
+						else if (command.equalsIgnoreCase("kill") || command.equalsIgnoreCase("k")) {
+							System.out.println("The kill command is unsupported at this time");
+							// TODO Make this and the fix command work or remove them
+							// try {
+							// 	int optionNum = Integer.parseInt(option);
+							// 	if(optionNum == 0 || optionNum > 4) {
+							// 		throw new NumberFormatException();
+							// 	}
+							// 	String request = "k_"+ optionNum + "\n";
+							// 	Client.sendRequest(toTheSocket, request);
+							// }
+							// catch(NumberFormatException e) {
+							// 	commandValid = false;
+							// 	Client.invalidCommand();
+							// }
+						}
+						else if (command.equalsIgnoreCase("fixServer") || command.equalsIgnoreCase("f")) {
+							System.out.println("The fix command is unsupported at this time");
+							// try {
+							// 	int optionNum = Integer.parseInt(option);
+							// 	if(optionNum == 0 || optionNum > 4) {
+							// 		throw new NumberFormatException();
+							// 	}
+							// 	String request = "f_"+ optionNum + "\n";
+							// 	Client.sendRequest(toTheSocket, request);
+							// }
+							// catch(NumberFormatException e) {
+							// 	commandValid = false;
+							// 	Client.invalidCommand();
+							// }
+						}
+						else {
+							Client.invalidCommand();
+						}
 					}
 				}
+				
+				kbReader.close();
+			} catch (Exception e) {
+				System.err.println("Error at client: " + e.getMessage());
 			}
-			
-			kbReader.close();
-		}
+	}
 		System.out.println("Exiting");
 		try {
 			librarySocket.close();

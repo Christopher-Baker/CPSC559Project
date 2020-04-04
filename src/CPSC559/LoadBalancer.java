@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import sun.tools.tree.ThisExpression;
+//import sun.tools.tree.ThisExpression;
 
 import java.io.IOException;
 
@@ -17,7 +17,7 @@ public class LoadBalancer implements Runnable{
 	protected Thread runningThread = null;
 	protected boolean balancerRunning = true;
 	protected int clientCount = 0;
-	private static int leaderPort = -1;
+	private static int leaderPort = 9001;
 	
 	
 	public LoadBalancer() {
