@@ -4,7 +4,7 @@
 
 # Copy DBs from the cwd to tmp so they arent modified in the repo itself
 cp ./books.csv /tmp/books1.csv
-cp ./users.csv /tmp/users.csv
+cp ./users.csv /tmp/users1.csv
 
 cp ./books.csv /tmp/books2.csv
 cp ./users.csv /tmp/users2.csv

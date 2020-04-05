@@ -6,6 +6,7 @@ import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -69,10 +70,11 @@ public class WorkerThread extends Thread {
                 Socket connect = new Socket("localhost", siblings.get(i));
                 PrintWriter forwarder = new PrintWriter(connect.getOutputStream());
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream()));
-                connect.setSoTimeout(10000); // So the thread doesn't hang waiting for a response from other server, this will go 10 seconds max
+                connect.setSoTimeout(30000); // So the thread doesn't hang waiting for a response from other server, this will go 10 seconds max
                 forwarder.println(request);
+                forwarder.flush();
                 String line = reader.readLine();
-                if (line != "ack") {
+                if (!line.equals("ack")) {
                     connect.close();
                     throw new Exception("Server on port " + siblings.get(i) + " failed to acknowldge a forwarded message");
                 }
@@ -85,65 +87,90 @@ public class WorkerThread extends Thread {
         }
     }
 
+    private void processReq(String command, boolean forward) throws IOException {
+        switch(command.split("_")[0]) {
+            case "s":
+                // Command format: s_BookTitle
+                Book b = searchBook(command.split("_")[1]);
+                if (b == null) {
+                    output.println("nack");
+                } else {
+                    output.println(b.toString());
+                }
+                System.out.println("Printing book:" + b.toString());
+                output.flush();
+                break;
+            case "u":
+                // Command format: u_userLastName
+                User u = searchUser(command.split("_")[1]);
+                if (u == null) {
+                    output.println("nack");
+                } else {
+                    output.println(u.toString());
+                }
+                output.flush();
+                break;
+            case "b":
+                // Command format: b_userID_bookID
+                boolean success = borrow(command.split("_")[1],command.split("_")[2]);
+                if (success) {
+                    output.println("ack");
+                    if (forward) {
+                        forwardRequest("i_" + command);
+                    }
+                } else {
+                    output.println("nack");
+                }
+                output.flush();
+                break;
+            case "r":
+                // Command format: r_bookID
+                returnBook(command.split("_")[1]);
+                output.println("ack");
+                output.flush();
+                if (forward) {
+                    forwardRequest("i_" + command);
+                }
+                break;
+            case "f":
+                // Command format: f_userID_feeChangeAmount
+                modifyFees(command.split("_")[1], command.split("_")[2]);
+                output.println("ack");
+                output.flush();
+                if (forward) {
+                    forwardRequest("i_" + command);
+                }
+                break;
+            case "h":
+                // Command format: h
+                // Heartbeat
+                output.println("ack");
+                output.flush();
+                break;
+            case "l":
+                // Command format: l
+                // get load
+                OperatingSystemMXBean osmxb = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+                int load = Math.toIntExact(Math.round(osmxb.getProcessCpuLoad()));
+                output.println(load);
+                output.flush();
+                break;
+            case "i":
+                //internal forwarded message
+                String[] parts = command.split("_");
+                processReq(String.join("_", Arrays.copyOfRange(parts, 1, parts.length)), false); // Do not forward forwarded request
+                break;
+        }
+    }
+
     public void run() {
         try {
             String command = input.readLine();
 
             System.out.println("Processing command: " + command);
 
-            switch(command.split("_")[0]) {
-                case "s":
-                    // Command format: s_BookTitle
-                    Book b = searchBook(command.split("_")[1]);
-                    if (b == null) {
-                        output.println("nack");
-                    } else {
-                        output.println(b.toString());
-                    }
-                    break;
-                case "u":
-                    // Command format: u_userLastName
-                    User u = searchUser(command.split("_")[1]);
-                    if (u == null) {
-                        output.println("nack");
-                    } else {
-                        output.println(u.toString());
-                    }
-                case "b":
-                    // Command format: b_userID_bookID
-                    boolean success = borrow(command.split("_")[1],command.split("_")[2]);
-                    if (success) {
-                        output.println("ack");
-                        forwardRequest(command);
-                    } else {
-                        output.println("nack");
-                    }
-                    break;
-                case "r":
-                    // Command format: r_bookID
-                    returnBook(command.split("_")[1]);
-                    output.println("ack");
-                    forwardRequest(command);
-                    break;
-                case "f":
-                    // Command format: f_userID_feeChangeAmount
-                    modifyFees(command.split("_")[1], command.split("_")[2]);
-                    output.println("ack");
-                    forwardRequest(command);
-                    break;
-                case "h":
-                    // Command format: h
-                    // Heartbeat
-                    output.println("ack");
-                    break;
-                case "l":
-                    // Command format: l
-                    // get load
-                    OperatingSystemMXBean osmxb = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-                    int load = Math.toIntExact(Math.round(osmxb.getProcessCpuLoad()));
-                    output.println(load);
-                    break;
-            }
+            processReq(command, true);
+
         } catch (Exception e) {
             System.err.println("Encountered Exception: " + e.getMessage());
         }
