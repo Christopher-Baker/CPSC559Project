@@ -85,12 +85,71 @@ public class BalancerWorker implements Runnable {
 						response = this.fromDB.readLine(); //TODO if not begins with requestFromClient, try again
 						System.out.println("Got repsonse from server: " + response);
 						haveResponse = true;
-						if (response.equals("nack")) {
-							response = "The server was unable to process this request";
+						
+						String report = response.split("%")[0];
+						String command = (response.split("%")[0]).split(";")[0];
+						String data = "";
+						if(response.indexOf(";") != response.length() - 1) {
+							String data = (response.split("%")[0]).split(";")[1];
 						}
-						else if(response.equals("ack")) {
-							response = "The server has successfully completed your request";
+
+						if(requestFromClient.equals(command)) {
+							if(command.startsWith("s_")) {
+
+								if(report.equals("ack")) {
+									response = "The search was successful. Here are the results\n" + data + "\n";
+								}
+								else {
+									response = "The search was unsuccessful.\n";
+								}
+							}
+							else if(command.startsWith("u_")) {
+
+								if(report.equals("ack")) {
+									response = "The search was successful. Here are the results\n" + data + "\n";
+								}
+								else {
+									response = "The search was unsuccessful.\n";
+								}
+							}
+							else if(command.startsWith("b_")) {
+								if(report.equals("ack")) {
+									response = "The book was borrowed.\n";
+								}
+								else {
+									response = "The  book could not be borrowed.\n";
+								}
+							}
+							else if(command.startsWith("r_")) {
+								if(report.equals("ack")) {
+									response = "The book was returned.\n";
+								}
+								else {
+									response = "The book could not be returned.\n";
+								}
+							}
+							else if(command.startsWith("r_")) {
+								if(report.equals("ack")) {
+									response = "The book was returned.\n";
+								}
+								else {
+									response = "The book could not be returned.\n";
+								}
+							}
+							else if(command.startsWith("f_")) {
+								if(report.equals("ack")) {
+									response = "The fine was applied.\n";
+								}
+								else {
+									response = "The fine could not be applied.\n";
+								}
+							}
+
 						}
+						else {
+							//Stuff went down, send request to new server if possible or retry, @nick help me here
+						}
+
 					} catch (SocketTimeoutException e) {
 						//Set current port to DC
 						UsageChecker.dcPort(talkTo);
