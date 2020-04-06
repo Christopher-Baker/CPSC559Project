@@ -76,7 +76,7 @@ public class WorkerThread extends Thread {
                 String line = reader.readLine();
 
                 String report = line.split("%")[0];
-				String command = (line.split("%")[0]).split(";")[0];
+				String command = (line.split("%")[1]).split(";")[0];
                 if(command.equals(request)) {
                     if(!report.equals("ack")) {
                         connect.close();
