@@ -74,9 +74,20 @@ public class WorkerThread extends Thread {
                 forwarder.println(request);
                 forwarder.flush();
                 String line = reader.readLine();
-                if (!line.equals("ack")) {
-                    connect.close();
-                    throw new Exception("Server on port " + siblings.get(i) + " failed to acknowldge a forwarded message");
+
+                String report = line.split("%")[0];
+				String command = (line.split("%")[0]).split(";")[0];
+                if(command.equals(request)) {
+                    if(!report.equals("ack")) {
+                        connect.close();
+                        throw new Exception("Server on port " + siblings.get(i) + " failed to acknowledge " + command);
+                    }
+                    else {
+                        System.out.println("Server on port" + siblings.get(i) + "acknowledged " + command);
+                    }
+                }
+                else {
+                    //@nick plz
                 }
                 forwarder.close();
                 reader.close();
@@ -88,14 +99,17 @@ public class WorkerThread extends Thread {
     }
 
     private void processReq(String command, boolean forward) throws IOException {
+        String retMsg = "";
         switch(command.split("_")[0]) {
             case "s":
                 // Command format: s_BookTitle
                 Book b = searchBook(command.split("_")[1]);
                 if (b == null) {
-                    output.println("nack");
+                    retMsg = "nack%" + command + ';';
+                    output.println(retMsg);
                 } else {
-                    output.println(b.toString());
+                    retMsg = "ack%" + command + ';' + b.toString();
+                    output.println(retMsg);
                 }
                 System.out.println("Printing book:" + b.toString());
                 output.flush();
@@ -104,29 +118,35 @@ public class WorkerThread extends Thread {
                 // Command format: u_userLastName
                 User u = searchUser(command.split("_")[1]);
                 if (u == null) {
-                    output.println("nack");
+                    retMsg = "nack%" + command + ';';
+                    output.println(retMsg);
                 } else {
-                    output.println(u.toString());
+                    retMsg = "ack%" + command + ';' + u.toString();
+                    output.println(retMsg);
                 }
+                System.out.println("Printing user:" + u.toString());
                 output.flush();
                 break;
             case "b":
                 // Command format: b_userID_bookID
                 boolean success = borrow(command.split("_")[1],command.split("_")[2]);
                 if (success) {
-                    output.println("ack");
+                    retMsg = "ack%" + command + ';';
+                    output.println(retMsg);
                     if (forward) {
                         forwardRequest("i_" + command);
                     }
                 } else {
-                    output.println("nack");
+                    retMsg = "nack%" + command + ';';
+                    output.println(retMsg);
                 }
                 output.flush();
                 break;
             case "r":
                 // Command format: r_bookID
                 returnBook(command.split("_")[1]);
-                output.println("ack");
+                retMsg = "ack%" + command + ';';
+                output.println(retMsg);
                 output.flush();
                 if (forward) {
                     forwardRequest("i_" + command);
@@ -135,7 +155,8 @@ public class WorkerThread extends Thread {
             case "f":
                 // Command format: f_userID_feeChangeAmount
                 modifyFees(command.split("_")[1], command.split("_")[2]);
-                output.println("ack");
+                retMsg = "ack%" + command + ';';
+                output.println(retMsg);
                 output.flush();
                 if (forward) {
                     forwardRequest("i_" + command);
