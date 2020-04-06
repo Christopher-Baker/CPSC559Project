@@ -87,10 +87,10 @@ public class BalancerWorker implements Runnable {
 						haveResponse = true;
 						
 						String report = response.split("%")[0];
-						String command = (response.split("%")[0]).split(";")[0];
+						String command = (response.split("%")[1]).split(";")[0];
 						String data = "";
 						if(response.indexOf(";") != response.length() - 1) {
-							String data = (response.split("%")[0]).split(";")[1];
+							data = (response.split("%")[1]).split(";")[1];
 						}
 
 						if(requestFromClient.equals(command)) {
@@ -118,14 +118,6 @@ public class BalancerWorker implements Runnable {
 								}
 								else {
 									response = "The  book could not be borrowed.\n";
-								}
-							}
-							else if(command.startsWith("r_")) {
-								if(report.equals("ack")) {
-									response = "The book was returned.\n";
-								}
-								else {
-									response = "The book could not be returned.\n";
 								}
 							}
 							else if(command.startsWith("r_")) {

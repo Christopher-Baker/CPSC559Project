@@ -99,15 +99,16 @@ public class WorkerThread extends Thread {
     }
 
     private void processReq(String command, boolean forward) throws IOException {
+        String retMsg = "";
         switch(command.split("_")[0]) {
             case "s":
                 // Command format: s_BookTitle
                 Book b = searchBook(command.split("_")[1]);
                 if (b == null) {
-                    String retMsg = "nack%" + command + ';';
+                    retMsg = "nack%" + command + ';';
                     output.println(retMsg);
                 } else {
-                    String retMsg = "ack%" + command + ';' + b.toString();
+                    retMsg = "ack%" + command + ';' + b.toString();
                     output.println(retMsg);
                 }
                 System.out.println("Printing book:" + b.toString());
@@ -117,10 +118,10 @@ public class WorkerThread extends Thread {
                 // Command format: u_userLastName
                 User u = searchUser(command.split("_")[1]);
                 if (u == null) {
-                    String retMsg = "nack%" + command + ';';
+                    retMsg = "nack%" + command + ';';
                     output.println(retMsg);
                 } else {
-                     String retMsg = "ack%" + command + ';' + u.toString();
+                    retMsg = "ack%" + command + ';' + u.toString();
                     output.println(retMsg);
                 }
                 System.out.println("Printing user:" + u.toString());
@@ -130,13 +131,13 @@ public class WorkerThread extends Thread {
                 // Command format: b_userID_bookID
                 boolean success = borrow(command.split("_")[1],command.split("_")[2]);
                 if (success) {
-                    String retMsg = "ack%" + command + ';';
+                    retMsg = "ack%" + command + ';';
                     output.println(retMsg);
                     if (forward) {
                         forwardRequest("i_" + command);
                     }
                 } else {
-                    String retMsg = "nack%" + command + ';';
+                    retMsg = "nack%" + command + ';';
                     output.println(retMsg);
                 }
                 output.flush();
@@ -144,7 +145,7 @@ public class WorkerThread extends Thread {
             case "r":
                 // Command format: r_bookID
                 returnBook(command.split("_")[1]);
-                String retMsg = "ack%" + command + ';';
+                retMsg = "ack%" + command + ';';
                 output.println(retMsg);
                 output.flush();
                 if (forward) {
@@ -154,7 +155,7 @@ public class WorkerThread extends Thread {
             case "f":
                 // Command format: f_userID_feeChangeAmount
                 modifyFees(command.split("_")[1], command.split("_")[2]);
-                String retMsg = "ack%" + command + ';';
+                retMsg = "ack%" + command + ';';
                 output.println(retMsg);
                 output.flush();
                 if (forward) {
