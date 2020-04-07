@@ -97,43 +97,43 @@ public class BalancerWorker implements Runnable {
 							if(command.startsWith("s_")) {
 
 								if(report.equals("ack")) {
-									response = "The search was successful. Here are the results\n" + data + "\n";
+									response = "The search was successful. Here are the results\n" + data;
 								}
 								else {
-									response = "The search was unsuccessful.\n";
+									response = "The search was unsuccessful.";
 								}
 							}
 							else if(command.startsWith("u_")) {
 
 								if(report.equals("ack")) {
-									response = "The search was successful. Here are the results\n" + data + "\n";
+									response = "The search was successful. Here are the results\n" + data;
 								}
 								else {
-									response = "The search was unsuccessful.\n";
+									response = "The search was unsuccessful.";
 								}
 							}
 							else if(command.startsWith("b_")) {
 								if(report.equals("ack")) {
-									response = "The book was borrowed.\n";
+									response = "The book was borrowed.";
 								}
 								else {
-									response = "The  book could not be borrowed.\n";
+									response = "The  book could not be borrowed.";
 								}
 							}
 							else if(command.startsWith("r_")) {
 								if(report.equals("ack")) {
-									response = "The book was returned.\n";
+									response = "The book was returned.";
 								}
 								else {
-									response = "The book could not be returned.\n";
+									response = "The book could not be returned.";
 								}
 							}
 							else if(command.startsWith("f_")) {
 								if(report.equals("ack")) {
-									response = "The fine was applied.\n";
+									response = "The fine was applied.";
 								}
 								else {
-									response = "The fine could not be applied.\n";
+									response = "The fine could not be applied.";
 								}
 							}
 
@@ -167,8 +167,8 @@ public class BalancerWorker implements Runnable {
 				this.fromDB.close();
 				
 				this.toClient.println(response);
-				this.toClient.flush();
-				
+				this.toClient.println("");
+				this.toClient.flush();	
 			}
 			
 			this.fromClient.close();

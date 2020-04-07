@@ -33,10 +33,11 @@ public class Client {
 		while(keepRunning == true) {
 			try {
 				response = responseStream.readLine();
-				if(response != null) {
+				if(response != null && response.length() != 0) {
 					System.out.println(response);
 				}
 				else {
+					System.out.println("leaving loop");
 					keepRunning = false;
 				}
 			}
@@ -82,7 +83,6 @@ public class Client {
 				while(quitApplication == false) {
 					String usrInput = kbReader.nextLine();
 					String[] usrInputArr = usrInput.split(",");
-					System.out.println(usrInputArr.length);
 					if(usrInputArr.length == 1) {
 						if(usrInput.equalsIgnoreCase("quit") || usrInput.equalsIgnoreCase("q")) {
 							quitApplication = true;
@@ -97,7 +97,6 @@ public class Client {
 					else {
 						String command = usrInputArr[0];
 						//String option = usrInputArr[1];
-						System.out.println(command);
 						
 						if (command.equalsIgnoreCase("search") || command.equalsIgnoreCase("s")) {
 							if (usrInputArr.length == 2) {
