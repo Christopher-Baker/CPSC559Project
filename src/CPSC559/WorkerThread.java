@@ -169,8 +169,8 @@ public class WorkerThread extends Thread {
 
         dis.close();
 
-        UDB = new UserDB(System.getProperty("user.dir") + "/" + fileNames[1] + timeStamp);
-        BDB = new BookDB(System.getProperty("user.dir") + "/" + fileNames[0] + timeStamp);
+        WorkerClass.setBDB(System.getProperty("user.dir") + "/" + fileNames[0] + timeStamp);
+        WorkerClass.setUDB(System.getProperty("user.dir") + "/" + fileNames[1] + timeStamp);
 
     }
 

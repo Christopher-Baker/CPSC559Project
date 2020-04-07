@@ -58,4 +58,12 @@ public class WorkerClass {
             e.printStackTrace();
         }
     }
+
+    public static void setUDB(String path){
+        UDB = new UserDB(path);
+    }
+
+    public static void setBDB(String path){
+        BDB = new BookDB(path);
+    }
 }
