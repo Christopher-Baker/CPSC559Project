@@ -131,6 +131,18 @@ public class WorkerThread extends Thread {
 
     }
 
+    private synchronized int getAvailablePort(){
+        try (
+                ServerSocket socket = new ServerSocket(0);
+        ){
+            return socket.getLocalPort();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
     private synchronized void receivingSequence(int listeningPort) throws IOException {
 
         final String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
@@ -267,9 +279,14 @@ public class WorkerThread extends Thread {
 
             case "recvDB":
                 // receive the database from primary
-                // message: recvDB_ListeningPort
-                String port = command.split("_")[1];
-                receivingSequence(Integer.parseInt(port));
+                // message: recvDB_Request
+                // reply: Available Port
+                int availablePort = getAvailablePort();
+                if(availablePort != -1){
+                    output.println(Integer.toString(availablePort));
+                    output.flush();
+                    receivingSequence(availablePort);
+                }
                 break;
         }
     }

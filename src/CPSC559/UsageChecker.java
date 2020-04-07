@@ -46,7 +46,26 @@ public class UsageChecker implements Runnable {
 				
 				toDB = new PrintWriter(dbSocket.getOutputStream());
 				fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
-				connectionGood = true;
+
+				// if the connection recovers
+				int leaderPort = LoadBalancer.getLeader();
+				Socket leaderSocket = new Socket("loaclhost", leaderPort);
+				PrintWriter toLeader = new PrintWriter(leaderSocket.getOutputStream());
+
+				toDB.println("recvDB_Request");
+				toDB.flush();
+
+				String response = fromDB.readLine();
+				int replyPort = Integer.parseInt(response);
+
+				if(replyPort != -1){
+					String sendDBRequest = "sendDB_localhost:" + response;
+					toLeader.println(sendDBRequest);
+					toLeader.flush();
+					connectionGood = true;
+				}else{
+					throw new IllegalArgumentException("Failed to get an available port from remote.");
+				}
 			}
 			catch (Exception e) {
 				System.out.println("Waiting on port " + this.portNum);
@@ -57,11 +76,9 @@ public class UsageChecker implements Runnable {
 		this.updateUsage();
 		if(connectionGood) {
 			if(!LoadBalancer.hasLeader()) {
-				leaderElection();
+				LoadBalancer.setLeader(leaderElection());
 			}
 		}
-		
-
 	}
 	
 	private void updateUsage() {
