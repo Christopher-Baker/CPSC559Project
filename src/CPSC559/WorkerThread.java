@@ -100,7 +100,7 @@ public class WorkerThread extends Thread {
         }
     }
 
-    private void sendingSequence(String target, int targetPort) throws IOException {
+    private synchronized void sendingSequence(String target, int targetPort) throws IOException {
 
         File[] databases = new File[2];
         Socket socket = new Socket(InetAddress.getByName(target), targetPort);
@@ -131,7 +131,7 @@ public class WorkerThread extends Thread {
 
     }
 
-    private void receivingSequence(int listeningPort) throws IOException {
+    private synchronized void receivingSequence(int listeningPort) throws IOException {
 
         final String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
         String[] fileNames = new String[2];
