@@ -78,9 +78,9 @@ public class UsageChecker implements Runnable {
 			//Set current usage to -1
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
-		} 
-		
-		catch (Exception e) {
+
+
+		} catch (Exception e) {
 			System.out.println("Unable to read usage response from server.");
 			System.err.println(e.getMessage());
 			
@@ -88,6 +88,7 @@ public class UsageChecker implements Runnable {
 			
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
+
 		}
 	}
 	

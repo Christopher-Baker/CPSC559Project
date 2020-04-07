@@ -90,6 +90,7 @@ public class BookDB {
         return hash;
     }
 
+
     private int readHighestId() throws IOException {
         int maxId = -1;
         List<String> data = new ArrayList<>(Files.readAllLines(Paths.get(this.filepath), StandardCharsets.UTF_8));
