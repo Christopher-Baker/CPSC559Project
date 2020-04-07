@@ -37,7 +37,6 @@ public class Client {
 					System.out.println(response);
 				}
 				else {
-					System.out.println("leaving loop");
 					keepRunning = false;
 				}
 			}
