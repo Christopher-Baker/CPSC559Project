@@ -29,7 +29,6 @@ public class UsageChecker implements Runnable {
 	
 	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
-			initialized = true;
 			init(numOfReplicas);
 		}
 		this.id = id;
@@ -93,7 +92,10 @@ public class UsageChecker implements Runnable {
 	}
 	
 	private static synchronized void init(int numOfReplicas) {
-		
+		if(initialized) {
+			return;
+		}
+		initialized = true;
 		for(int i = 9001; i < (9001 + numOfReplicas); ++i) {
 			socketUsage.add(new SocketUsagePair(i, -1));
 		}
