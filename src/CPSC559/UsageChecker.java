@@ -1,6 +1,7 @@
 package CPSC559;
 
 import java.util.List;
+import java.util.Random;
 import java.util.ArrayList;
 import java.net.ResponseCache;
 import java.net.Socket;
@@ -38,11 +39,7 @@ public class UsageChecker implements Runnable {
 	}
 	
 	@Override
-	public void run() {
-		
-		Date prev;
-		Date curr;
-		
+	public void run() {	
 		while(checkerRunning) {
 			while(!connectionGood) {
 				try{
@@ -58,8 +55,11 @@ public class UsageChecker implements Runnable {
 					connectionGood = false;
 				}
 			}
-			
-			Thread.sleep(1000*15);
+			try {
+				Thread.sleep(1000*5);
+			} catch(InterruptedException e) {
+				System.err.println("Thread is mad becuase it's sleep got interupted :(");
+			}
 			
 			this.updateUsage();
 			if(connectionGood) {
@@ -78,6 +78,7 @@ public class UsageChecker implements Runnable {
 		
 		try {
 			response = this.fromDB.readLine();
+			System.out.println("response of usage: " + response);
 			
 			socketUsage.get(this.id).setUsage(Integer.parseInt(response));
 			
@@ -111,19 +112,31 @@ public class UsageChecker implements Runnable {
 	}
 	
 	public static synchronized int getQuietPort() {
+		/*
 		int minUsage = 9999;
 		int minPort = 0;
 		SocketUsagePair temp;
 		
 		for(int i = 0; i < socketUsage.size(); ++i) {
 			temp = socketUsage.get(i);
+			System.out.println(temp.usage());
 			if(temp.usage() < minUsage && temp.usage() >= 0) {
 				minUsage = temp.usage();
 				minPort = temp.portNum();
 			}
 		}
+		*/
+		Random rand = new Random();
+		int port = 9001;
+		while(true) {
+			SocketUsagePair s = socketUsage.get(rand.nextInt(socketUsage.size()));
+			if (s.usage() != -1) {
+				port = s.portNum();
+				break;
+			}
+		}
 		
-		return minPort;
+		return port;
 	}
 
 	public static synchronized int leaderElection() {
