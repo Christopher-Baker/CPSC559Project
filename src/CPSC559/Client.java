@@ -70,11 +70,9 @@ public class Client {
 		
 		
 		if(connectionGood == true) {
-			System.out.println("What is your name?");
 			Scanner kbReader = new Scanner(System.in);
-			String usr = kbReader.nextLine();
 			
-			System.out.println("Welcome to The library system " + usr + "!");
+			System.out.println("Welcome to The library system!");
 			Client.printHelpOutput();
 			
 			boolean quitApplication = false;
