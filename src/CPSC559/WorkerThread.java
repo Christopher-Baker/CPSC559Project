@@ -88,8 +88,17 @@ public class WorkerThread extends Thread {
                         System.out.println("Server on port" + siblings.get(i) + "acknowledged " + command);
                     }
                 }
-                else {
-                    //@nick plz
+                else { //Bad command ack from secondary server. Fix by sending database
+                    forwarder.println("recvDB_Request");
+                    forwarder.flush();
+                     
+                    String response = reader.readLine();
+                    int replyPort = Integer.parseInt(response);
+                    
+                    if(replyPort != -1) {
+                    	//toLeader(self) sendDB_localhost:response;
+                    	sendingSequence("localhost", replyPort);
+                    }
                 }
                 forwarder.close();
                 reader.close();
