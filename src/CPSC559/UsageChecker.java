@@ -26,6 +26,7 @@ public class UsageChecker implements Runnable {
 	private PrintWriter toDB = null;
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
+	private boolean initiallyConnected = false;
 	
 	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
@@ -47,24 +48,12 @@ public class UsageChecker implements Runnable {
 				toDB = new PrintWriter(dbSocket.getOutputStream());
 				fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
 
-				// if the connection recovers
-				int leaderPort = LoadBalancer.getLeader();
-				Socket leaderSocket = new Socket("loaclhost", leaderPort);
-				PrintWriter toLeader = new PrintWriter(leaderSocket.getOutputStream());
-
-				toDB.println("recvDB_Request");
-				toDB.flush();
-
-				String response = fromDB.readLine();
-				int replyPort = Integer.parseInt(response);
-
-				if(replyPort != -1){
-					String sendDBRequest = "sendDB_localhost:" + response;
-					toLeader.println(sendDBRequest);
-					toLeader.flush();
-					connectionGood = true;
-				}else{
-					throw new IllegalArgumentException("Failed to get an available port from remote.");
+				connectionGood = true;
+				if(initiallyConnected) { //Server died and came back up
+					initiateDBSend(); //Tell leader to send current server the DB
+				}
+				else {
+					initiallyConnected = true; // @Nick if DB send breaks things, set to false to disable initiateDBSend
 				}
 			}
 			catch (Exception e) {
@@ -73,8 +62,9 @@ public class UsageChecker implements Runnable {
 			}
 		}
 		
-		this.updateUsage();
+		
 		if(connectionGood) {
+			this.updateUsage();
 			if(!LoadBalancer.hasLeader()) {
 				LoadBalancer.setLeader(leaderElection());
 			}
@@ -151,6 +141,28 @@ public class UsageChecker implements Runnable {
 			if(socketUsage.get(i).portNum() == port) {
 				socketUsage.get(i).setUsage(-1);
 			}
+		}
+	}
+	
+	public void initiateDBSend() {
+		// if the connection recovers
+		int leaderPort = LoadBalancer.getLeader();
+		Socket leaderSocket = new Socket("loaclhost", leaderPort);
+		PrintWriter toLeader = new PrintWriter(leaderSocket.getOutputStream());
+
+		toDB.println("recvDB_Request");
+		toDB.flush();
+
+		String response = fromDB.readLine();
+		int replyPort = Integer.parseInt(response);
+
+		if(replyPort != -1){
+			String sendDBRequest = "sendDB_localhost:" + response;
+			toLeader.println(sendDBRequest);
+			toLeader.flush();
+			connectionGood = true;
+		}else{
+			throw new IllegalArgumentException("Failed to get an available port from remote.");
 		}
 	}
 }
