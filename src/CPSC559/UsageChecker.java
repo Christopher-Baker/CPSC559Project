@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Date;
 
 import CPSC559.LoadBalancer;
 import CPSC559.SocketUsagePair;
@@ -26,6 +27,7 @@ public class UsageChecker implements Runnable {
 	private PrintWriter toDB = null;
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
+	protected boolean checkerRunning = true;
 	
 	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
@@ -38,29 +40,35 @@ public class UsageChecker implements Runnable {
 	@Override
 	public void run() {
 		
-		while(!connectionGood) {
-			try{
-				dbSocket = new Socket("localhost", this.portNum);
-				dbSocket.setSoTimeout(10*1000);
-				
-				toDB = new PrintWriter(dbSocket.getOutputStream());
-				fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
-				connectionGood = true;
+		Date prev;
+		Date curr;
+		
+		while(checkerRunning) {
+			while(!connectionGood) {
+				try{
+					dbSocket = new Socket("localhost", this.portNum);
+					dbSocket.setSoTimeout(10*1000);
+					
+					toDB = new PrintWriter(dbSocket.getOutputStream());
+					fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
+					connectionGood = true;
+				}
+				catch (Exception e) {
+					System.out.println("Waiting on port " + this.portNum);
+					connectionGood = false;
+				}
 			}
-			catch (Exception e) {
-				System.out.println("Waiting on port " + this.portNum);
-				connectionGood = false;
+			
+			Thread.sleep(1000*15);
+			
+			this.updateUsage();
+			if(connectionGood) {
+				if(!LoadBalancer.hasLeader()) {
+					LoadBalancer.setLeader(leaderElection());
+				}
 			}
 		}
 		
-		this.updateUsage();
-		if(connectionGood) {
-			if(!LoadBalancer.hasLeader()) {
-				leaderElection();
-			}
-		}
-		
-
 	}
 	
 	private void updateUsage() {
@@ -119,12 +127,12 @@ public class UsageChecker implements Runnable {
 	}
 
 	public static synchronized int leaderElection() {
-		int minUsage = 9999;
 		int newPort = -1;
 		for(int i = 0; i < socketUsage.size(); ++i) {
-			if(socketUsage.get(i).usage() < minUsage && socketUsage.get(i).usage() > 0){
-				minUsage = socketUsage.get(i).usage();
+			//Get lowest ID socket, which is first alive socket.
+			if(socketUsage.get(i).usage() >= 0){
 				newPort = socketUsage.get(i).portNum();
+				return newPort;
 			}
 		}
 		
@@ -137,5 +145,9 @@ public class UsageChecker implements Runnable {
 				socketUsage.get(i).setUsage(-1);
 			}
 		}
+	}
+	
+	private void kill() {
+		this.checkerRunning = false;
 	}
 }

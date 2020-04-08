@@ -90,6 +90,11 @@ public class WorkerThread extends Thread {
                 }
                 else {
                     //@nick plz
+                	//announce send sequence
+                	//send sequence
+                	
+                	//figure out where check for receive sequence goes
+                	//Figure out where receive sequence goes
                 }
                 forwarder.close();
                 reader.close();
