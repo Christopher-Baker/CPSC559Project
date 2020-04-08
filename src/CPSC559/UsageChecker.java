@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Date;
 
 import CPSC559.LoadBalancer;
 import CPSC559.SocketUsagePair;
@@ -40,6 +41,9 @@ public class UsageChecker implements Runnable {
 	@Override
 	public void run() {
 		
+		Date prev;
+		Date curr;
+		
 		while(checkerRunning) {
 			while(!connectionGood) {
 				try{
@@ -55,6 +59,8 @@ public class UsageChecker implements Runnable {
 					connectionGood = false;
 				}
 			}
+			
+			Thread.sleep(1000*15);
 			
 			this.updateUsage();
 			if(connectionGood) {
