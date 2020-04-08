@@ -65,7 +65,7 @@ public class UsageChecker implements Runnable {
 			this.updateUsage();
 			if(connectionGood) {
 				if(!LoadBalancer.hasLeader()) {
-					leaderElection();
+					LoadBalancer.setLeader(leaderElection());
 				}
 			}
 		}
