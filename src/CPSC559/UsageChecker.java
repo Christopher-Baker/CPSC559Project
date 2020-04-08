@@ -124,12 +124,12 @@ public class UsageChecker implements Runnable {
 	}
 
 	public static synchronized int leaderElection() {
-		int minUsage = 9999;
 		int newPort = -1;
 		for(int i = 0; i < socketUsage.size(); ++i) {
-			if(socketUsage.get(i).usage() < minUsage && socketUsage.get(i).usage() > 0){
-				minUsage = socketUsage.get(i).usage();
+			if(socketUsage.get(i).usage() >= 0){
 				newPort = socketUsage.get(i).portNum();
+				LoadBalancer.setLeader(newPort);
+				return newPort;
 			}
 		}
 		

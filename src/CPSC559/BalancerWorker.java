@@ -9,7 +9,10 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Random;
 
+import com.sun.prism.Texture.Usage;
+
 import CPSC559.LoadBalancer;
+import CPSC559.UsageChecker;
 
 //Class to handle all the client requests to the load balancer
 public class BalancerWorker implements Runnable {
@@ -57,9 +60,9 @@ public class BalancerWorker implements Runnable {
 					try {
 						if(requestFromClient.startsWith("s_") || requestFromClient.startsWith("u_")) { //read only. Any servers can handle
 							search = true;
-							Random rand = new Random();
-							talkTo = rand.nextInt(3) + 9001;
-							// talkTo = UsageChecker.getQuietPort();
+							//Random rand = new Random();
+							//talkTo = rand.nextInt(3) + 9001;
+							talkTo = UsageChecker.getQuietPort();
 							if(talkTo == LoadBalancer.getLeader()) {
 								connectedToLeader = true;
 							}
@@ -139,7 +142,22 @@ public class BalancerWorker implements Runnable {
 
 						}
 						else {
+							haveResponse = false;
 							//Stuff went down, send request to new server if possible or retry, @nick help me here
+							UsageChecker.dcPort(talkTo);
+							this.toDB.close();
+							this.fromDB.close();
+							this.dbSocket.close();
+							
+							//if leader, elect new leader
+							if(connectedToLeader) {
+								LoadBalancer.clearLeader(talkTo); //remove leader from LB
+								UsageChecker.dcPort(talkTo); //remove leader from active server list
+								
+								LoadBalancer.setLeader(UsageChecker.leaderElection());
+								
+								connectedToLeader = false;
+							}
 						}
 
 					} catch (SocketTimeoutException e) {
@@ -151,11 +169,16 @@ public class BalancerWorker implements Runnable {
 						
 						//if leader, elect new leader
 						if(connectedToLeader) {
+							LoadBalancer.clearLeader(talkTo); //remove leader from LB
+							UsageChecker.dcPort(talkTo); //remove leader from active server list
+							
+							LoadBalancer.setLeader(UsageChecker.leaderElection());
+							/*
 							int newLead = LoadBalancer.getLeader() + 1;
 							if (newLead > 9003) {
 								newLead = 9001;
 							}
-							LoadBalancer.setLeader(newLead);
+							LoadBalancer.setLeader(newLead);*/
 							
 							connectedToLeader = false;
 						}
