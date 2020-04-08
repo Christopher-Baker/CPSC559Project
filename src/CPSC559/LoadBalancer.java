@@ -82,7 +82,7 @@ public class LoadBalancer implements Runnable{
 	}
 	
 	public static synchronized boolean hasLeader() {
-		return leaderPort == -1;
+		return leaderPort != -1;
 	}
 	
 	public static synchronized void clearLeader(int processLeader) {
