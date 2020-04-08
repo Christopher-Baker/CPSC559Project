@@ -26,6 +26,7 @@ public class UsageChecker implements Runnable {
 	private PrintWriter toDB = null;
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
+	protected boolean checkerRunning = true;
 	
 	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
@@ -39,29 +40,30 @@ public class UsageChecker implements Runnable {
 	@Override
 	public void run() {
 		
-		while(!connectionGood) {
-			try{
-				dbSocket = new Socket("localhost", this.portNum);
-				dbSocket.setSoTimeout(10*1000);
-				
-				toDB = new PrintWriter(dbSocket.getOutputStream());
-				fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
-				connectionGood = true;
+		while(checkerRunning) {
+			while(!connectionGood) {
+				try{
+					dbSocket = new Socket("localhost", this.portNum);
+					dbSocket.setSoTimeout(10*1000);
+					
+					toDB = new PrintWriter(dbSocket.getOutputStream());
+					fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
+					connectionGood = true;
+				}
+				catch (Exception e) {
+					System.out.println("Waiting on port " + this.portNum);
+					connectionGood = false;
+				}
 			}
-			catch (Exception e) {
-				System.out.println("Waiting on port " + this.portNum);
-				connectionGood = false;
+			
+			this.updateUsage();
+			if(connectionGood) {
+				if(!LoadBalancer.hasLeader()) {
+					leaderElection();
+				}
 			}
 		}
 		
-		this.updateUsage();
-		if(connectionGood) {
-			if(!LoadBalancer.hasLeader()) {
-				leaderElection();
-			}
-		}
-		
-
 	}
 	
 	private void updateUsage() {
@@ -135,5 +137,9 @@ public class UsageChecker implements Runnable {
 				socketUsage.get(i).setUsage(-1);
 			}
 		}
+	}
+	
+	private void kill() {
+		this.checkerRunning = false;
 	}
 }
