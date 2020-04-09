@@ -52,7 +52,12 @@ public class UsageChecker implements Runnable {
 				}
 				catch (Exception e) {
 					System.out.println("Waiting on port " + this.portNum);
-					Thread.sleep(5*1000);
+					try {
+						Thread.sleep(5*1000);
+					}
+					catch (Exception e2) {
+						System.err.println("Thread is mad becuase it's sleep got interupted :(");
+					}
 					connectionGood = false;
 				}
 			}
@@ -85,6 +90,10 @@ public class UsageChecker implements Runnable {
 			
 		} catch (SocketTimeoutException e) {
 			//Set current usage to -1
+			if(this.portNum == LoadBalancer.getLeader()) {
+				LoadBalancer.clearLeader(this.portNum);
+				LoadBalancer.setLeader(leaderElection());
+			}
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
 
@@ -141,11 +150,13 @@ public class UsageChecker implements Runnable {
 	}
 
 	public static synchronized int leaderElection() {
+		System.out.println("Starting leader election.");
 		int newPort = -1;
 		for(int i = 0; i < socketUsage.size(); ++i) {
 			//Get lowest ID socket, which is first alive socket.
 			if(socketUsage.get(i).usage() >= 0){
 				newPort = socketUsage.get(i).portNum();
+				System.out.println(newPort + " is the new leader!");
 				return newPort;
 			}
 		}
