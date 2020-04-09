@@ -89,6 +89,7 @@ public class BalancerWorker implements Runnable {
 						}
 
 						if(requestFromClient.equals(command)) {
+							System.out.println("reported command matches sent command");
 							if(command.startsWith("s_")) {
 
 								if(report.equals("ack")) {
@@ -133,9 +134,9 @@ public class BalancerWorker implements Runnable {
 							}
 
 						}
-						else {
-							//Stuff went down, send request to new server if possible or retry, @nick help me here
-							//Send request to next server. 
+						else { 
+							System.out.println("reported command does not match sent command");
+							//handle byz
 						}
 
 					} catch (SocketTimeoutException e) {

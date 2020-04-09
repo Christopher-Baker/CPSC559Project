@@ -80,6 +80,7 @@ public class WorkerThread extends Thread {
                 String report = line.split("%")[0];
 				String command = (line.split("%")[1]).split(";")[0];
                 if(command.equals(request)) {
+                	System.out.println("reported command matches sent command");
                     if(!report.equals("ack")) {
                         connect.close();
                         throw new Exception("Server on port " + siblings.get(i) + " failed to acknowledge " + command);
@@ -89,12 +90,9 @@ public class WorkerThread extends Thread {
                     }
                 }
                 else {
-                    //@nick plz
+                	System.out.println("reported command does not match sent command");
                 	//announce send sequence
-                	//send sequence
                 	
-                	//figure out where check for receive sequence goes
-                	//Figure out where receive sequence goes
                 }
                 forwarder.close();
                 reader.close();
