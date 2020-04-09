@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
+import CPSC559.LoadBalancer;
+
 //Class to handle all the client requests to the load balancer
 public class BalancerWorker implements Runnable {
 
@@ -147,10 +149,14 @@ public class BalancerWorker implements Runnable {
 						
 						//if leader, elect new leader
 						if(connectedToLeader) {
-							LoadBalancer.clearLeader(talkTo); //remove leader from LB
-							UsageChecker.dcPort(talkTo); //remove leader from active server list
 							
-							LoadBalancer.setLeader(UsageChecker.leaderElection());
+							if(talkTo == LoadBalancer.getLeader()) {
+								LoadBalancer.clearLeader(talkTo); //remove leader from LB
+								LoadBalancer.setLeader(UsageChecker.leaderElection());
+							}
+							
+							
+							
 							
 							/*
 							int newLead = LoadBalancer.getLeader() + 1;
