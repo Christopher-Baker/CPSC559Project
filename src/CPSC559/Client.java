@@ -58,7 +58,7 @@ public class Client {
 	    BufferedReader responseFromSocket = null;
 	    
 		try {
-			System.out.println("Connecting to the library server");
+			System.out.println("Connecting to Alexandria.IO");
 			librarySocket = new Socket(host, portNum);
 			toTheSocket = new PrintWriter(librarySocket.getOutputStream());
 			responseFromSocket = new BufferedReader(new InputStreamReader(librarySocket.getInputStream()));
@@ -72,7 +72,7 @@ public class Client {
 		if(connectionGood == true) {
 			Scanner kbReader = new Scanner(System.in);
 			
-			System.out.println("Welcome to The library system!");
+			System.out.println("Welcome to Alexandria.IO");
 			Client.printHelpOutput();
 			
 			boolean quitApplication = false;
