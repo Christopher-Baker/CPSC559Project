@@ -52,6 +52,7 @@ public class UsageChecker implements Runnable {
 				}
 				catch (Exception e) {
 					System.out.println("Waiting on port " + this.portNum);
+					Thread.sleep(5*1000);
 					connectionGood = false;
 				}
 			}
