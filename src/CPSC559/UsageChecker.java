@@ -52,6 +52,10 @@ public class UsageChecker implements Runnable {
 				}
 				catch (Exception e) {
 					System.out.println("Waiting on port " + this.portNum);
+					if(this.portNum == LoadBalancer.getLeader()) {
+						LoadBalancer.clearLeader(this.portNum);
+						LoadBalancer.setLeader(leaderElection());
+					}
 					try {
 						Thread.sleep(5*1000);
 					}
@@ -103,6 +107,10 @@ public class UsageChecker implements Runnable {
 			System.err.println(e.getMessage());
 			
 			//TODO remote restart server?
+			if(this.portNum == LoadBalancer.getLeader()) {
+				LoadBalancer.clearLeader(this.portNum);
+				LoadBalancer.setLeader(leaderElection());
+			}
 			
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
