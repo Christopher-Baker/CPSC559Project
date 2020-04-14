@@ -151,7 +151,7 @@ public class BalancerWorker implements Runnable {
 							LoadBalancer.clearLeader(talkTo); //remove leader from LB
 							UsageChecker.dcPort(talkTo); //remove leader from active server list
 							
-							LoadBalancer.setLeader(UsageChecker.leaderElection());
+							LoadBalancer.setLeader(UsageChecker.leaderElection(1));
 							
 							/*
 							int newLead = LoadBalancer.getLeader() + 1;
