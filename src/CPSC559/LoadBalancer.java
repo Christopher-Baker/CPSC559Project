@@ -13,14 +13,17 @@ public class LoadBalancer implements Runnable{
 	protected Thread runningThread = null;
 	protected boolean balancerRunning = true;
 	protected int clientCount = 0;
+	protected int numberOfReplicas = 3;
 	private static int leaderPort = 9001;
+	
 	
 	
 	public LoadBalancer() {
 	}
 	
-	public LoadBalancer(int port) {
+	public LoadBalancer(int port,int numReplicas) {
 		this.balancerPort = port;
+		this.numberOfReplicas = numReplicas;
 	}
 	
 	
@@ -32,8 +35,8 @@ public class LoadBalancer implements Runnable{
 		int numberOfReplicas = 3;
 		
 		//Start the usage checker threads
-		for(int i = 0; i < numberOfReplicas; ++i) {
-			new Thread(new UsageChecker(i, numberOfReplicas)).start();
+		for(int i = 0; i < this.numberOfReplicas; ++i) {
+			new Thread(new UsageChecker(i, this.numberOfReplicas)).start();
 		}
 		
 		//Starting the server on the specified port
