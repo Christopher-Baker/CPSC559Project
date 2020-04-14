@@ -29,6 +29,7 @@ public class UsageChecker implements Runnable {
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
 	protected boolean checkerRunning = true;
+	protected boolean getNewSockets = false;
 	
 	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
@@ -41,7 +42,7 @@ public class UsageChecker implements Runnable {
 	@Override
 	public void run() {	
 		while(checkerRunning) {
-			while(!connectionGood) {
+			while(!connectionGood || getNewSockets) {
 				try{
 					dbSocket = new Socket("localhost", this.portNum);
 					dbSocket.setSoTimeout(10*1000);
@@ -49,6 +50,7 @@ public class UsageChecker implements Runnable {
 					toDB = new PrintWriter(dbSocket.getOutputStream());
 					fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
 					connectionGood = true;
+					getNewSockets = false;
 				}
 				catch (Exception e) {
 					System.out.println("Waiting on port " + this.portNum);
@@ -94,12 +96,15 @@ public class UsageChecker implements Runnable {
 			
 		} catch (SocketTimeoutException e) {
 			//Set current usage to -1
+			socketUsage.get(this.id).setUsage(-1);
+			connectionGood = false;
+			
+			//Do leader election
 			if(this.portNum == LoadBalancer.getLeader()) {
 				LoadBalancer.clearLeader(this.portNum);
 				LoadBalancer.setLeader(leaderElection(4));
 			}
-			socketUsage.get(this.id).setUsage(-1);
-			connectionGood = false;
+			
 
 
 		} catch (Exception e) {
@@ -115,6 +120,11 @@ public class UsageChecker implements Runnable {
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
 
+		} finally {
+			this.fromDB.close();
+			this.toDB.close();
+			this.dbSocket.close();
+			getNewSockets = true;
 		}
 	}
 	
