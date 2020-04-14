@@ -121,9 +121,13 @@ public class UsageChecker implements Runnable {
 			connectionGood = false;
 
 		} finally {
-			this.fromDB.close();
-			this.toDB.close();
-			this.dbSocket.close();
+			try {
+				this.fromDB.close();
+				this.toDB.close();
+				this.dbSocket.close();
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
 			getNewSockets = true;
 		}
 	}
