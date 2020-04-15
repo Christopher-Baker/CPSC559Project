@@ -89,6 +89,7 @@ public class BalancerWorker implements Runnable {
 						}
 
 						if(requestFromClient.equals(command)) {
+							System.out.println("reported command matches sent command");
 							if(command.startsWith("s_")) {
 
 								if(report.equals("ack")) {
@@ -133,23 +134,9 @@ public class BalancerWorker implements Runnable {
 							}
 
 						}
-						else {
-							haveResponse = false;
-							//Stuff went down, send request to new server if possible or retry, @nick help me here
-							UsageChecker.dcPort(talkTo);
-							this.toDB.close();
-							this.fromDB.close();
-							this.dbSocket.close();
-							
-							//if leader, elect new leader
-							if(connectedToLeader) {
-								LoadBalancer.clearLeader(talkTo); //remove leader from LB
-								UsageChecker.dcPort(talkTo); //remove leader from active server list
-								
-								LoadBalancer.setLeader(UsageChecker.leaderElection());
-								
-								connectedToLeader = false;
-							}
+						else { 
+							System.out.println("reported command does not match sent command");
+							//handle byz
 						}
 
 					} catch (SocketTimeoutException e) {
@@ -164,7 +151,8 @@ public class BalancerWorker implements Runnable {
 							LoadBalancer.clearLeader(talkTo); //remove leader from LB
 							UsageChecker.dcPort(talkTo); //remove leader from active server list
 							
-							LoadBalancer.setLeader(UsageChecker.leaderElection());
+							LoadBalancer.setLeader(UsageChecker.leaderElection(1));
+							
 							/*
 							int newLead = LoadBalancer.getLeader() + 1;
 							if (newLead > 9003) {

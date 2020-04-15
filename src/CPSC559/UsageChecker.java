@@ -29,7 +29,7 @@ public class UsageChecker implements Runnable {
 	private boolean connectionGood = false;
 	private boolean initiallyConnected = false;
 	protected boolean checkerRunning = true;
-
+	protected boolean getNewSockets = false;
 	
 	public UsageChecker(int id, int numOfReplicas) {
 		if(!initialized) {
@@ -42,7 +42,7 @@ public class UsageChecker implements Runnable {
 	@Override
 	public void run() {
 		while(checkerRunning) {
-			while(!connectionGood) {
+			while(!connectionGood || getNewSockets) {
 				try{
 					dbSocket = new Socket("localhost", this.portNum);
 					dbSocket.setSoTimeout(10*1000);
@@ -50,15 +50,20 @@ public class UsageChecker implements Runnable {
 					toDB = new PrintWriter(dbSocket.getOutputStream());
 					fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
 					connectionGood = true;
-          if(initiallyConnected) { //Server died and came back up
-					  initiateDBSend(); //Tell leader to send current server the DB
-				  }
-				  else {
-				  	initiallyConnected = true; // @Nick if DB send breaks things, set to false to disable initiateDBSend
-				  }
+					getNewSockets = false;
 				}
 				catch (Exception e) {
 					System.out.println("Waiting on port " + this.portNum);
+					if(this.portNum == LoadBalancer.getLeader()) {
+						LoadBalancer.clearLeader(this.portNum);
+						LoadBalancer.setLeader(leaderElection(2));
+					}
+					try {
+						Thread.sleep(5*1000);
+					}
+					catch (Exception e2) {
+						System.err.println("Thread is mad becuase it's sleep got interupted :(");
+					}
 					connectionGood = false;
 				}
 			}
@@ -71,7 +76,7 @@ public class UsageChecker implements Runnable {
 			this.updateUsage();
 			if(connectionGood) {
 				if(!LoadBalancer.hasLeader()) {
-					LoadBalancer.setLeader(leaderElection());
+					LoadBalancer.setLeader(leaderElection(3));
 				}
 			}
 		}
@@ -93,6 +98,13 @@ public class UsageChecker implements Runnable {
 			//Set current usage to -1
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
+			
+			//Do leader election
+			if(this.portNum == LoadBalancer.getLeader()) {
+				LoadBalancer.clearLeader(this.portNum);
+				LoadBalancer.setLeader(leaderElection(4));
+			}
+			
 
 
 		} catch (Exception e) {
@@ -100,10 +112,23 @@ public class UsageChecker implements Runnable {
 			System.err.println(e.getMessage());
 			
 			//TODO remote restart server?
+			if(this.portNum == LoadBalancer.getLeader()) {
+				LoadBalancer.clearLeader(this.portNum);
+				LoadBalancer.setLeader(leaderElection(5));
+			}
 			
 			socketUsage.get(this.id).setUsage(-1);
 			connectionGood = false;
 
+		} finally {
+			try {
+				this.fromDB.close();
+				this.toDB.close();
+				this.dbSocket.close();
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
+			getNewSockets = true;
 		}
 	}
 	
@@ -147,12 +172,28 @@ public class UsageChecker implements Runnable {
 	}
 
 	public static synchronized int leaderElection() {
+		System.out.println("Starting leader election.");
 		int newPort = -1;
 		for(int i = 0; i < socketUsage.size(); ++i) {
       //Get lowest ID socket, which is first alive socket.
 			if(socketUsage.get(i).usage() >= 0){
 				newPort = socketUsage.get(i).portNum();
-				LoadBalancer.setLeader(newPort);
+				System.out.println(newPort + " is the new leader!");
+				return newPort;
+			}
+		}
+		
+		return newPort;
+	}
+	
+	public static synchronized int leaderElection(int callFrom) {
+		System.out.println("Starting leader election from" + callFrom);
+		int newPort = -1;
+		for(int i = 0; i < socketUsage.size(); ++i) {
+			//Get lowest ID socket, which is first alive socket.
+			if(socketUsage.get(i).usage() >= 0){
+				newPort = socketUsage.get(i).portNum();
+				System.out.println(newPort + " is the new leader!");
 				return newPort;
 			}
 		}

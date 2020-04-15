@@ -80,6 +80,7 @@ public class WorkerThread extends Thread {
                 String report = line.split("%")[0];
 				String command = (line.split("%")[1]).split(";")[0];
                 if(command.equals(request)) {
+                	System.out.println("reported command matches sent command");
                     if(!report.equals("ack")) {
                         connect.close();
                         throw new Exception("Server on port " + siblings.get(i) + " failed to acknowledge " + command);
@@ -88,17 +89,10 @@ public class WorkerThread extends Thread {
                         System.out.println("Server on port" + siblings.get(i) + "acknowledged " + command);
                     }
                 }
-                else { //Bad command ack from secondary server. Fix by sending database
-                    forwarder.println("recvDB_Request");
-                    forwarder.flush();
-                     
-                    String response = reader.readLine();
-                    int replyPort = Integer.parseInt(response);
-                    
-                    if(replyPort != -1) {
-                    	//toLeader(self) sendDB_localhost:response;
-                    	sendingSequence("localhost", replyPort);
-                    }
+                else {
+                	System.out.println("reported command does not match sent command");
+                	//announce send sequence
+                	
                 }
                 forwarder.close();
                 reader.close();
