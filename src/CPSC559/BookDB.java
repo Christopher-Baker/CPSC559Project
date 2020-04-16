@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;  
 import java.util.ArrayList;
 import java.util.List;
+
+import CPSC559.Book;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -42,7 +45,9 @@ public class BookDB {
                 return book;
             }
         }
-        return null;
+        Book nullBook = new Book("null");
+        nullBook.id = -1;
+        return nullBook;
     }
 
     ///

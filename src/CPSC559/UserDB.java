@@ -41,7 +41,9 @@ public class UserDB {
                 return user;
             }
         }
-        return null;
+        User nullUser = new User("null", "null");
+        nullUser.id = -1;
+        return nullUser;
     }
 
     ///
