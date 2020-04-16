@@ -79,7 +79,7 @@ public class WorkerThread extends Thread {
 
                 String report = line.split("%")[0];
 				String command = (line.split("%")[1]).split(";")[0];
-                if(command.equals(request)) {
+                if(command.equals(request) || ("i_" + command).equals(request)) {
                 	System.out.println("reported command matches sent command");
                     if(!report.equals("ack")) {
                         connect.close();
