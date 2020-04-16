@@ -46,7 +46,7 @@ public class Client {
 		}
 	}
 	
-	//Assuming the server is on local host port 9000
+	//Assuming the load balancer is on local host port 9000
 	public static void main(String args[]) {
 		String host = "localhost";
 		int portNum = 9000;
@@ -93,7 +93,6 @@ public class Client {
 					}
 					else {
 						String command = usrInputArr[0];
-						//String option = usrInputArr[1];
 						
 						if (command.equalsIgnoreCase("search") || command.equalsIgnoreCase("s")) {
 							if (usrInputArr.length == 2) {
@@ -143,34 +142,9 @@ public class Client {
 						}
 						else if (command.equalsIgnoreCase("kill") || command.equalsIgnoreCase("k")) {
 							System.out.println("The kill command is unsupported at this time");
-							// TODO Make this and the fix command work or remove them
-							// try {
-							// 	int optionNum = Integer.parseInt(option);
-							// 	if(optionNum == 0 || optionNum > 4) {
-							// 		throw new NumberFormatException();
-							// 	}
-							// 	String request = "k_"+ optionNum + "\n";
-							// 	Client.sendRequest(toTheSocket, request);
-							// }
-							// catch(NumberFormatException e) {
-							// 	commandValid = false;
-							// 	Client.invalidCommand();
-							// }
 						}
 						else if (command.equalsIgnoreCase("fixServer") || command.equalsIgnoreCase("f")) {
 							System.out.println("The fix command is unsupported at this time");
-							// try {
-							// 	int optionNum = Integer.parseInt(option);
-							// 	if(optionNum == 0 || optionNum > 4) {
-							// 		throw new NumberFormatException();
-							// 	}
-							// 	String request = "f_"+ optionNum + "\n";
-							// 	Client.sendRequest(toTheSocket, request);
-							// }
-							// catch(NumberFormatException e) {
-							// 	commandValid = false;
-							// 	Client.invalidCommand();
-							// }
 						}
 						else {
 							Client.invalidCommand();

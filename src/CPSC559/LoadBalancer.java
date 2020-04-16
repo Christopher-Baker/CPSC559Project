@@ -2,7 +2,6 @@ package CPSC559;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import java.io.IOException;
 
 //Class in charge of load balancer server
@@ -15,8 +14,6 @@ public class LoadBalancer implements Runnable{
 	protected int clientCount = 0;
 	protected int numberOfReplicas = 3;
 	private static int leaderPort = 9001;
-	
-	
 	
 	public LoadBalancer() {
 	}
@@ -31,9 +28,7 @@ public class LoadBalancer implements Runnable{
 		synchronized (this) {
 			this.runningThread = Thread.currentThread();
 		}
-		
-		int numberOfReplicas = 3;
-		
+				
 		//Start the usage checker threads
 		for(int i = 0; i < this.numberOfReplicas; ++i) {
 			new Thread(new UsageChecker(i, this.numberOfReplicas)).start();
@@ -61,7 +56,6 @@ public class LoadBalancer implements Runnable{
 				}
 				throw new RuntimeException("Error accepting client connection.", e);
 			}
-			
 			
 			//send the request to a new thread
 			new Thread(new BalancerWorker(clientSocket, ++clientCount)).start();
@@ -97,5 +91,4 @@ public class LoadBalancer implements Runnable{
 	public static synchronized int getLeader() {
 		return leaderPort;
 	}
-
 }

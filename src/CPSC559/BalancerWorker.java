@@ -42,7 +42,6 @@ public class BalancerWorker implements Runnable {
 				int talkTo = -1;
 				String response = null;
 				boolean haveResponse = false;
-				boolean search = false;
 				
 				
 				while(!haveResponse) {
@@ -51,7 +50,6 @@ public class BalancerWorker implements Runnable {
 					}
 					try {
 						if(requestFromClient.startsWith("s_") || requestFromClient.startsWith("u_")) { //read only. Any servers can handle
-							search = true;
 							//Random rand = new Random();
 							//talkTo = rand.nextInt(3) + 9001;
 							talkTo = UsageChecker.getQuietPort();
@@ -81,6 +79,7 @@ public class BalancerWorker implements Runnable {
 						System.out.println("Got repsonse from server: " + response);
 						haveResponse = true;
 						
+						//parse response
 						String report = response.split("%")[0];
 						String command = (response.split("%")[1]).split(";")[0];
 						String data = "";
@@ -136,7 +135,6 @@ public class BalancerWorker implements Runnable {
 						}
 						else { 
 							System.out.println("reported command does not match sent command");
-							//handle byz
 						}
 
 					} catch (SocketTimeoutException e) {
@@ -151,21 +149,13 @@ public class BalancerWorker implements Runnable {
 							LoadBalancer.clearLeader(talkTo); //remove leader from LB
 							UsageChecker.dcPort(talkTo); //remove leader from active server list
 							
-							LoadBalancer.setLeader(UsageChecker.leaderElection(1));
-							
-							/*
-							int newLead = LoadBalancer.getLeader() + 1;
-							if (newLead > 9003) {
-								newLead = 9001;
-							}
-							LoadBalancer.setLeader(newLead);*/
-							
+							LoadBalancer.setLeader(UsageChecker.leaderElection(1));							
 							connectedToLeader = false;
 						}
 					}
 				}
 				
-				
+				//cleanup streams an resturn to client
 				this.toDB.close();
 				this.fromDB.close();
 				
