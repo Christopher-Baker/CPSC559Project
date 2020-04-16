@@ -3,18 +3,12 @@ package CPSC559;
 import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
-import java.net.ResponseCache;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
-import java.io.IOException;
 
-import CPSC559.LoadBalancer;
-import CPSC559.SocketUsagePair;
 
 public class UsageChecker implements Runnable {
 
@@ -27,7 +21,6 @@ public class UsageChecker implements Runnable {
 	private PrintWriter toDB = null;
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
-	private boolean initiallyConnected = false;
 	private boolean disrupted = false;
 	protected boolean checkerRunning = true;
 	protected boolean getNewSockets = false;
@@ -150,20 +143,7 @@ public class UsageChecker implements Runnable {
 	}
 	
 	public static synchronized int getQuietPort() {
-		/*
-		int minUsage = 9999;
-		int minPort = 0;
-		SocketUsagePair temp;
-		
-		for(int i = 0; i < socketUsage.size(); ++i) {
-			temp = socketUsage.get(i);
-			System.out.println(temp.usage());
-			if(temp.usage() < minUsage && temp.usage() >= 0) {
-				minUsage = temp.usage();
-				minPort = temp.portNum();
-			}
-		}
-		*/
+		// currently gets a random port, as in our test system all ports have equal usage of 0, so picking the quietest one was not realistic
 		Random rand = new Random();
 		int port = 9001;
 		while(true) {
@@ -243,9 +223,5 @@ public class UsageChecker implements Runnable {
 		} catch (Exception e) {
 			System.out.println("Failed to send the database.");
 		}
-	}
-
-	private void kill(){
-		this.checkerRunning = false;
 	}
 }

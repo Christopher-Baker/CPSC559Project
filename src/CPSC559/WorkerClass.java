@@ -40,12 +40,9 @@ public class WorkerClass {
                 connect = ss.accept();
                 input = new BufferedReader(new InputStreamReader(connect.getInputStream()));
                 output = new PrintWriter(connect.getOutputStream());
-                // right now there is no thread pool, 
-                // The threads are responsible for killing themselves and not crashing the system by running forever
+        
                 WorkerThread wt = new WorkerThread(UDB, BDB, output, input, siblings);
                 wt.start();
-                // TODO figure out how to kill this loop from thread
-                    // This may be impossible, we may just have to ctrl-c to kill 
             }
 
             input.close();

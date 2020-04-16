@@ -262,12 +262,6 @@ public class WorkerThread extends Thread {
                     forwardRequest("i_" + command);
                 }
                 break;
-            case "h":
-                // Command format: h
-                // Heartbeat
-                output.println("ack");
-                output.flush();
-                break;
             case "l":
                 // Command format: l
                 // get load
