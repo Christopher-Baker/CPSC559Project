@@ -28,6 +28,7 @@ public class UsageChecker implements Runnable {
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
 	private boolean initiallyConnected = false;
+	private boolean disrupted = false;
 	protected boolean checkerRunning = true;
 	protected boolean getNewSockets = false;
 	
@@ -50,7 +51,9 @@ public class UsageChecker implements Runnable {
 					toDB = new PrintWriter(dbSocket.getOutputStream());
 					fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
 
-					initiateDBSend(); // if the connection recovers, send the database over
+					if(this.disrupted){
+						initiateDBSend(); // if the connection recovers, send the database over
+					}
 
 					connectionGood = true;
 					getNewSockets = false;
@@ -68,6 +71,7 @@ public class UsageChecker implements Runnable {
 						System.err.println("Thread is mad becuase it's sleep got interupted :(");
 					}
 					connectionGood = false;
+					disrupted = true;
 				}
 			}
 			try {
@@ -113,8 +117,7 @@ public class UsageChecker implements Runnable {
 		} catch (Exception e) {
 			System.out.println("Unable to read usage response from server.");
 			System.err.println(e.getMessage());
-			
-			//TODO remote restart server?
+
 			if(this.portNum == LoadBalancer.getLeader()) {
 				LoadBalancer.clearLeader(this.portNum);
 				LoadBalancer.setLeader(leaderElection(5));
@@ -217,7 +220,7 @@ public class UsageChecker implements Runnable {
 		// if the connection recovers
 		try {
 			int leaderPort = LoadBalancer.getLeader();
-			Socket leaderSocket = new Socket("loaclhost", leaderPort);
+			Socket leaderSocket = new Socket("localhost", leaderPort);
 			PrintWriter toLeader = new PrintWriter(leaderSocket.getOutputStream());
 
 			toDB.println("recvDB_Request");
@@ -227,16 +230,18 @@ public class UsageChecker implements Runnable {
 			int replyPort = Integer.parseInt(response);
 
 			if (replyPort != -1) {
+				Thread.sleep(1000);
 				String sendDBRequest = "sendDB_localhost:" + response;
 				toLeader.println(sendDBRequest);
 				toLeader.flush();
-				connectionGood = true;
+				toLeader.close();
+				leaderSocket.close();
+				this.disrupted = false;
 			} else {
 				throw new IllegalArgumentException("Failed to get an available port from remote.");
 			}
 		} catch (Exception e) {
 			System.out.println("Failed to send the database.");
-			System.out.println(e.getMessage());
 		}
 	}
 

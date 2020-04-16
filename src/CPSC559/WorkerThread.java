@@ -103,33 +103,39 @@ public class WorkerThread extends Thread {
         }
     }
 
-    private synchronized void sendingSequence(String target, int targetPort) throws IOException {
+    private synchronized void sendingSequence(String target, int targetPort){
 
-        File[] databases = new File[2];
-        Socket socket = new Socket(InetAddress.getByName(target), targetPort);
+        try{
+            File[] databases = new File[2];
+            Socket socket = new Socket(InetAddress.getByName(target), targetPort);
 
-        BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
-        DataOutputStream dos = new DataOutputStream(bos);
+            BufferedOutputStream bos = new BufferedOutputStream(socket.getOutputStream());
+            DataOutputStream dos = new DataOutputStream(bos);
 
-        databases[0] = new File(BDB.filepath);
-        databases[1] = new File(UDB.filepath);
-        dos.writeInt(databases.length);
+            databases[0] = new File(BDB.filepath);
+            databases[1] = new File(UDB.filepath);
 
-        for(File db : databases){
-            long length = db.length();
-            dos.writeLong(length);
+            for(File db : databases){
+                long length = db.length();
+                dos.writeLong(length);
+                dos.flush();
 
-            String name = db.getName();
-            System.out.println("Sending " + name + " to " + target + ":" + targetPort);
+                String name = db.getName();
+                System.out.println("Sending " + name + " to " + target + ":" + targetPort);
 
-            dos.writeUTF(name);
+                dos.writeUTF(name);
+                dos.flush();
 
-            FileInputStream fis = new FileInputStream(db);
-            BufferedInputStream bis = new BufferedInputStream(fis);
+                FileInputStream fis = new FileInputStream(db);
+                BufferedInputStream bis = new BufferedInputStream(fis);
 
-            int theByte = 0;
-            while((theByte = bis.read()) != -1) bos.write(theByte);
-            bis.close();
+                int theByte = 0;
+                while((theByte = bis.read()) != -1) bos.write(theByte);
+                bos.flush();
+                bis.close();
+            }
+        }catch(Exception e) {
+            System.out.println("Error sending file to remote.");
         }
 
     }
@@ -141,52 +147,54 @@ public class WorkerThread extends Thread {
             return socket.getLocalPort();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Cannot find an empty port.");
             return -1;
         }
     }
 
-    private synchronized void receivingSequence(int listeningPort) throws IOException {
+    private synchronized void receivingSequence(int listeningPort) {
+        try{
+            final String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+            String[] fileNames = new String[2];
 
-        final String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-        String[] fileNames = new String[2];
+            ServerSocket srvSocket = new ServerSocket(listeningPort);
+            Socket socket = srvSocket.accept();
 
-        ServerSocket srvSocket = new ServerSocket(listeningPort);
-        Socket socket = srvSocket.accept();
+            BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
+            DataInputStream dis = new DataInputStream(bis);
 
-        BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
-        DataInputStream dis = new DataInputStream(bis);
+            File[] files = new File[2];
 
-        int filesCount = dis.readInt();
-        File[] files = new File[filesCount];
+            for(int i = 0; i < 2; i++) {
+                long fileLength = dis.readLong();
+                String fileName = dis.readUTF();
 
-        for(int i = 0; i < filesCount; i++) {
-            long fileLength = dis.readLong();
-            String fileName = dis.readUTF();
-            
-            if(fileName.contains("books")){
-                fileNames[0] = fileName;
-            }else if(fileName.contains("users")){
-                fileNames[1] = fileName;
+                if(fileName.contains("books")){
+                    fileNames[0] = fileName;
+                }else if(fileName.contains("users")){
+                    fileNames[1] = fileName;
+                }
+
+                System.out.println("Receiving " + fileName);
+
+                files[i] = new File(System.getProperty("user.dir") + "/" + fileName + timeStamp);
+
+                FileOutputStream fos = new FileOutputStream(files[i]);
+                BufferedOutputStream bos = new BufferedOutputStream(fos);
+
+                for(int j = 0; j < fileLength; j++) bos.write(bis.read());
+
+                bos.close();
+                fos.close();
             }
 
-            System.out.println("Receiving " + fileName);
+            dis.close();
 
-            files[i] = new File(System.getProperty("user.dir") + "/" + fileName + timeStamp);
-
-            FileOutputStream fos = new FileOutputStream(files[i]);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-
-            for(int j = 0; j < fileLength; j++) bos.write(bis.read());
-
-            bos.close();
+            WorkerClass.setBDB(System.getProperty("user.dir") + "/" + fileNames[0] + timeStamp);
+            WorkerClass.setUDB(System.getProperty("user.dir") + "/" + fileNames[1] + timeStamp);
+        }catch(Exception e){
+            System.out.println("Error receive file from remote.");
         }
-
-        dis.close();
-
-        WorkerClass.setBDB(System.getProperty("user.dir") + "/" + fileNames[0] + timeStamp);
-        WorkerClass.setUDB(System.getProperty("user.dir") + "/" + fileNames[1] + timeStamp);
-
     }
 
 
