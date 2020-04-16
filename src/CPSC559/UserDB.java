@@ -4,6 +4,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;  
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion.User;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -41,7 +44,9 @@ public class UserDB {
                 return user;
             }
         }
-        return null;
+        User nullUser = new User("null", "null");
+        nullUser.id = -1;
+        return nullUser;
     }
 
     ///

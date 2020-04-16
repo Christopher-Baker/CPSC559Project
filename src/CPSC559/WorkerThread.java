@@ -204,8 +204,8 @@ public class WorkerThread extends Thread {
             case "s":
                 // Command format: s_BookTitle
                 Book b = searchBook(command.split("_")[1]);
-                if (b == null) {
-                    retMsg = "nack%" + command + ';';
+                if(b.title.equals("null") && b.id == -1) {
+                	retMsg = "nack%" + command + ';';
                     output.println(retMsg);
                 } else {
                     retMsg = "ack%" + command + ';' + b.toString();
@@ -217,7 +217,7 @@ public class WorkerThread extends Thread {
             case "u":
                 // Command format: u_userLastName
                 User u = searchUser(command.split("_")[1]);
-                if (u == null) {
+                if (u.fName.equals("null") && u.lName.equals("null") && u.id == -1) {
                     retMsg = "nack%" + command + ';';
                     output.println(retMsg);
                 } else {
