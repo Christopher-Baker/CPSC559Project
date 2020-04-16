@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.Date;
 
 import CPSC559.LoadBalancer;
 import CPSC559.SocketUsagePair;
@@ -28,6 +27,8 @@ public class UsageChecker implements Runnable {
 	private PrintWriter toDB = null;
 	private BufferedReader fromDB = null;
 	private boolean connectionGood = false;
+	private boolean initiallyConnected = false;
+	private boolean disrupted = false;
 	protected boolean checkerRunning = true;
 	protected boolean getNewSockets = false;
 	
@@ -40,7 +41,7 @@ public class UsageChecker implements Runnable {
 	}
 	
 	@Override
-	public void run() {	
+	public void run() {
 		while(checkerRunning) {
 			while(!connectionGood || getNewSockets) {
 				try{
@@ -49,6 +50,11 @@ public class UsageChecker implements Runnable {
 					
 					toDB = new PrintWriter(dbSocket.getOutputStream());
 					fromDB = new BufferedReader(new InputStreamReader(dbSocket.getInputStream()));
+
+					if(this.disrupted){
+						initiateDBSend(); // if the connection recovers, send the database over
+					}
+
 					connectionGood = true;
 					getNewSockets = false;
 				}
@@ -65,6 +71,7 @@ public class UsageChecker implements Runnable {
 						System.err.println("Thread is mad becuase it's sleep got interupted :(");
 					}
 					connectionGood = false;
+					disrupted = true;
 				}
 			}
 			try {
@@ -110,8 +117,7 @@ public class UsageChecker implements Runnable {
 		} catch (Exception e) {
 			System.out.println("Unable to read usage response from server.");
 			System.err.println(e.getMessage());
-			
-			//TODO remote restart server?
+
 			if(this.portNum == LoadBalancer.getLeader()) {
 				LoadBalancer.clearLeader(this.portNum);
 				LoadBalancer.setLeader(leaderElection(5));
@@ -175,7 +181,7 @@ public class UsageChecker implements Runnable {
 		System.out.println("Starting leader election.");
 		int newPort = -1;
 		for(int i = 0; i < socketUsage.size(); ++i) {
-			//Get lowest ID socket, which is first alive socket.
+      //Get lowest ID socket, which is first alive socket.
 			if(socketUsage.get(i).usage() >= 0){
 				newPort = socketUsage.get(i).portNum();
 				System.out.println(newPort + " is the new leader!");
@@ -209,7 +215,37 @@ public class UsageChecker implements Runnable {
 		}
 	}
 	
-	private void kill() {
+
+	public void initiateDBSend() {
+		// if the connection recovers
+		try {
+			int leaderPort = LoadBalancer.getLeader();
+			Socket leaderSocket = new Socket("localhost", leaderPort);
+			PrintWriter toLeader = new PrintWriter(leaderSocket.getOutputStream());
+
+			toDB.println("recvDB_Request");
+			toDB.flush();
+
+			String response = fromDB.readLine();
+			int replyPort = Integer.parseInt(response);
+
+			if (replyPort != -1) {
+				Thread.sleep(1000);
+				String sendDBRequest = "sendDB_localhost:" + response;
+				toLeader.println(sendDBRequest);
+				toLeader.flush();
+				toLeader.close();
+				leaderSocket.close();
+				this.disrupted = false;
+			} else {
+				throw new IllegalArgumentException("Failed to get an available port from remote.");
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to send the database.");
+		}
+	}
+
+	private void kill(){
 		this.checkerRunning = false;
 	}
 }

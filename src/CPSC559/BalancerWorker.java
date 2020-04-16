@@ -54,7 +54,7 @@ public class BalancerWorker implements Runnable {
 							search = true;
 							//Random rand = new Random();
 							//talkTo = rand.nextInt(3) + 9001;
-							 talkTo = UsageChecker.getQuietPort();
+							talkTo = UsageChecker.getQuietPort();
 							if(talkTo == LoadBalancer.getLeader()) {
 								connectedToLeader = true;
 							}
